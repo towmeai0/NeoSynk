@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 
-
 @Composable
 fun VitalsSPO2Screen(navController: NavController) {
     var selectedTab by remember { mutableStateOf("") }
@@ -32,9 +31,11 @@ fun VitalsSPO2Screen(navController: NavController) {
     val orange = Color(0xFFFF9800)
     val redLine = Color.Red
 
-    Scaffold(
-        containerColor = darkBackground,
+    val sampleSPO2Data = listOf(0.1f, 0.3f, 0.6f, 0.4f, 0.7f, 0.8f, 0.9f)  // Example data; replace with actual dynamic data
+    val healthyRange = 95..100  // Example healthy SPO2 range in percentage
 
+    Scaffold(
+        containerColor = darkBackground
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -98,19 +99,32 @@ fun VitalsSPO2Screen(navController: NavController) {
                     .fillMaxSize()
                     .padding(16.dp)) {
 
-                    val points = listOf(0.1f, 0.3f, 0.6f, 0.4f, 0.7f, 0.8f, 0.9f)
-                    val widthStep = size.width / (points.size - 1)
+                    val widthStep = size.width / (sampleSPO2Data.size - 1)
                     val height = size.height
 
-                    for (i in 0 until points.size - 1) {
+                    // Define the healthy SPO2 range (95% to 100%)
+                    val healthyRange = 95f..100f
+
+                    for (i in 0 until sampleSPO2Data.size - 1) {
+                        // Convert the value to percentage by multiplying by 100
+                        val spo2Percentage = sampleSPO2Data[i] * 100
+
+                        // Customize line color based on SPO2 level
+                        val color = if (spo2Percentage in healthyRange) {
+                            Color.Green // Healthy range
+                        } else {
+                            redLine // Unhealthy range
+                        }
+
                         drawLine(
-                            color = redLine,
-                            start = Offset(x = i * widthStep, y = height * (1 - points[i])),
-                            end = Offset(x = (i + 1) * widthStep, y = height * (1 - points[i + 1])),
+                            color = color,
+                            start = Offset(x = i * widthStep, y = height * (1 - sampleSPO2Data[i])),
+                            end = Offset(x = (i + 1) * widthStep, y = height * (1 - sampleSPO2Data[i + 1])),
                             strokeWidth = 4f
                         )
                     }
                 }
+
             }
 
             Spacer(modifier = Modifier.height(24.dp))

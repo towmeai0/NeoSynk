@@ -5,8 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.neosynk.ui.screen.Screen
 import com.example.neosynk.ui.screen.vitals.WeightDetailsScreen
-import com.example.neosynk.ui.Screen
 import com.example.neosynk.ui.screen.auth.KidsLoginScreen
 import com.example.neosynk.ui.screen.auth.LoginScreen
 import com.example.neosynk.ui.screen.auth.SplashScreen

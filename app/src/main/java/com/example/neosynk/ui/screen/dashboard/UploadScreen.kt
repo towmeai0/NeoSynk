@@ -17,21 +17,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.neosynk.ui.theme.AppBackground
+import com.example.neosynk.ui.theme.appBarColor
+import com.example.neosynk.ui.theme.orange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadScreen(navController: NavController) {
     var selectedFileName by remember { mutableStateOf<String?>(null) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AppBackground)
             .padding(16.dp)
     ) {
         TopAppBar(
             title = { Text("Upload File", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.DarkGray)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarColor)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -41,9 +43,9 @@ fun UploadScreen(navController: NavController) {
                 .fillMaxWidth()
                 .height(200.dp)
                 .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-                .background(Color.DarkGray.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                .background(appBarColor.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                 .clickable {
-                    // TODO: Add file picker logic
+                    // TODO: Replace with file picker logic. For now, set a dummy file name.
                     selectedFileName = "example_document.pdf"
                 },
             contentAlignment = Alignment.Center
@@ -51,7 +53,7 @@ fun UploadScreen(navController: NavController) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     imageVector = Icons.Default.CloudUpload,
-                    contentDescription = "Upload",
+                    contentDescription = "Upload Icon",
                     tint = Color.White,
                     modifier = Modifier.size(48.dp)
                 )
@@ -75,18 +77,22 @@ fun UploadScreen(navController: NavController) {
 
         Button(
             onClick = {
-                // TODO: Add file upload logic
+                // TODO: Implement file upload logic.
+                // Consider using a ViewModel and show a progress indicator during upload.
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+            colors = ButtonDefaults.buttonColors(containerColor = orange),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Icon(Icons.Default.AttachFile, contentDescription = null, tint = Color.White)
+            Icon(
+                imageVector = Icons.Default.AttachFile,
+                contentDescription = "Attach File",
+                tint = Color.White
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text("Upload", color = Color.White)
         }
     }
 }
-

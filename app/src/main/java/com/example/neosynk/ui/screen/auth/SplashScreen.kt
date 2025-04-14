@@ -12,7 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.neosynk.ui.Screen
+import com.example.neosynk.ui.screen.Screen
+import com.example.neosynk.ui.theme.OrangeAccent
+import com.example.neosynk.ui.theme.AppBackground
+import com.example.neosynk.ui.theme.CardBackground
 
 @Composable
 fun SplashScreen(
@@ -21,9 +24,9 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AppBackground)
     ) {
-        // Status Bar (placeholder)
+        // Status Bar placeholder
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -32,7 +35,7 @@ fun SplashScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Add status bar elements if needed
+            // Add status indicators here if needed
         }
 
         Column(
@@ -51,7 +54,7 @@ fun SplashScreen(
                 )
                 Text(
                     text = "NeoSynk",
-                    color = Color(0xFF4CAF50), // Light green
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 70.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -65,15 +68,15 @@ fun SplashScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // Push bottom content to bottom
+            Spacer(modifier = Modifier.weight(1f)) // Push bottom container to bottom
 
-            // Bottom Rounded Container
+            // Bottom Rounded Info + CTA Container
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
                     .background(
-                        color = Color(0xFFEDEDED),
+                        color = CardBackground,
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
                     .padding(24.dp)
@@ -90,15 +93,17 @@ fun SplashScreen(
                     )
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Login.route)
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.SplashScreen.route) { inclusive = true }
+                            }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                        colors = ButtonDefaults.buttonColors(containerColor = OrangeAccent),
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
                     ) {
-                        Text(text = "Next >", color = Color.White, fontSize = 16.sp)
+                        Text(text = "Get Started", color = Color.White, fontSize = 16.sp)
                     }
                 }
             }
