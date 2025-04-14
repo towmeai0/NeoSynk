@@ -1,4 +1,4 @@
-package com.example.neosynk.ui.screen.bottomNavScreen
+package com.example.neosynk.ui.screen.dashboard
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.neosynk.ui.Screen
-import com.example.neosynk.ui.screen.TabScreen.VitalTabScreen
+import com.example.neosynk.ui.screen.tabs.VitalTabScreen
 
 @Composable
 fun HomeScreen(

@@ -30,12 +30,9 @@ sealed class Screen(val route: String) {
 
     object SplashScreen : Screen("SplashScreen")
 
-
     object HeartRateDetailsScreen : Screen("HeartRateDetailsScreen")
     object VitalsSPO2Screen :Screen ("VitalsSPO2Screen")
-    object weightDetailsScreen :Screen ("WeightDetailsScreen")
-
-
+    object WeightDetailsScreen :Screen ("WeightDetailsScreen")
 
     companion object {
         val bottomScreens = listOf(

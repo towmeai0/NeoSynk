@@ -1,2 +1,2 @@
-package com.example.neosynk.network
+package com.example.neosynk.data.network
 

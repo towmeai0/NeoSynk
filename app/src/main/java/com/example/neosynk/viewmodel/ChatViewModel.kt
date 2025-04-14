@@ -1,40 +1,24 @@
 package com.example.neosynk.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import com.example.neosynk.data.ChatEntity
-import java.util.UUID
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import com.example.neosynk.data.repository.ChatRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ChatViewModel : ViewModel() {
 
-    // Dummy chat message list
-    val messages = mutableStateListOf<ChatEntity>()
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    private val repository: ChatRepository
+) : ViewModel() {
 
-    init {
-        // Add some initial dummy messages
-        messages.addAll(
-            listOf(
+    val messages = repository.getAllMessages().asLiveData()
 
-            )
-        )
-    }
-
-    fun sendMessage(text: String) {
-        // Add user message
-        messages.add(ChatEntity(id = UUID.randomUUID().toString(), message = text, isUser = true))
-
-        // Simulate bot reply after sending message (optional)
-        simulateBotReply()
-    }
-
-    private fun simulateBotReply() {
-        // Very basic dummy response
-        messages.add(
-            ChatEntity(
-                id = UUID.randomUUID().toString(),
-                message = "Thanks for your message! We will get back to you.",
-                isUser = false
-            )
-        )
+    fun onSendMessage(text: String) {
+        viewModelScope.launch {
+            repository.sendMessage(text)
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.neosynk.ui.screen.vitalsScreen
+package com.example.neosynk.ui.screen.vitals
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

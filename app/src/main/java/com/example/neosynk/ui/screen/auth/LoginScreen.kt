@@ -1,4 +1,4 @@
-package com.example.neosynk.ui.screen
+package com.example.neosynk.ui.screen.auth
 
 
 import androidx.compose.foundation.BorderStroke
@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 
 @Composable
 fun LoginScreen(

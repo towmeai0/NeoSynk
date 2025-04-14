@@ -1,27 +1,22 @@
 package com.example.neosynk.ui.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.neosynk.ui.screen.vitalsScreen.WeightDetailsScreen
+import com.example.neosynk.ui.screen.vitals.WeightDetailsScreen
 import com.example.neosynk.ui.Screen
-import com.example.neosynk.ui.screen.*
-import com.example.neosynk.ui.screen.TabScreen.VitalTabScreen
-import com.example.neosynk.ui.screen.bottomNavScreen.DiyaScreen
-import com.example.neosynk.ui.screen.bottomNavScreen.DocsScreen
-import com.example.neosynk.ui.screen.bottomNavScreen.HomeScreen
-import com.example.neosynk.ui.screen.bottomNavScreen.UploadScreen
-import com.example.neosynk.ui.screen.vitalsScreen.HeartRateDetailsScreen
-import com.example.neosynk.ui.screen.vitalsScreen.VitalsSPO2Screen
+import com.example.neosynk.ui.screen.auth.KidsLoginScreen
+import com.example.neosynk.ui.screen.auth.LoginScreen
+import com.example.neosynk.ui.screen.auth.SplashScreen
+import com.example.neosynk.ui.screen.tabs.VitalTabScreen
+import com.example.neosynk.ui.screen.dashboard.DiyaScreen
+import com.example.neosynk.ui.screen.dashboard.DocsScreen
+import com.example.neosynk.ui.screen.dashboard.HomeScreen
+import com.example.neosynk.ui.screen.dashboard.UploadScreen
+import com.example.neosynk.ui.screen.vitals.HeartRateDetailsScreen
+import com.example.neosynk.ui.screen.vitals.VitalsSPO2Screen
 
 @Composable
 fun NeoSynkNavHost(
@@ -57,9 +52,14 @@ fun NeoSynkNavHost(
         composable(Screen.DiyaScreen.route) {
             DiyaScreen(navController)
         }
-        composable("heartRateDetailsScreen") { HeartRateDetailsScreen(navController) }
-        composable("VitalsSPO2Screen") { VitalsSPO2Screen(navController) }
-        composable("weightDetailsScreen") { WeightDetailsScreen(navController) }
-
+        composable(Screen.HeartRateDetailsScreen.route) {
+            HeartRateDetailsScreen(navController)
+        }
+        composable(Screen.VitalsSPO2Screen.route) {
+            VitalsSPO2Screen(navController)
+        }
+        composable(Screen.WeightDetailsScreen.route) {
+            WeightDetailsScreen(navController)
+        }
     }
 }

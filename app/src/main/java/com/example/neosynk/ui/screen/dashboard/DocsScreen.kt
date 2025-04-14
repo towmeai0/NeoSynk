@@ -1,4 +1,4 @@
-package com.example.neosynk.ui.screen.bottomNavScreen
+package com.example.neosynk.ui.screen.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

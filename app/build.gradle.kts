@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+
 
 }
 
@@ -55,9 +58,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
 
-    implementation(libs.androidx.hilt.navigation.compose)
-
-
+    implementation(libs.hilt.android.v250)
+    ksp(libs.hilt.compiler.v250)
+    implementation(libs.androidx.hilt.navigation.compose.v110)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel)
+    ksp(libs.androidx.hilt.compiler) //
 
     // Room Dependencies
     implementation(libs.room.runtime)
