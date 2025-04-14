@@ -34,6 +34,7 @@ fun NeoSynkApp(
     val showBottomBar = when (currentDestination?.route) {
         Screen.Login.route,
         Screen.SplashScreen.route,
+        Screen.DiyaScreen.route
         Screen.KidsLoginScreen.route -> false
         else -> true
     }
