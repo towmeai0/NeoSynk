@@ -1,4 +1,4 @@
-package com.example.neosynk.ui.screen.TabScreen
+package com.example.neosynk.ui.screen.tabs
 
 
 import androidx.compose.foundation.background

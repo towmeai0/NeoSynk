@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.neosynk.viewmodel.ChatViewModel
-import com.example.neosynk.data.ChatEntity
+import com.example.neosynk.data.database.chatdatabase.ChatEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sin

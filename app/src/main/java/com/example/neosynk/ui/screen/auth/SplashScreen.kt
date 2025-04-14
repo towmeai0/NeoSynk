@@ -1,4 +1,4 @@
-package com.example.neosynk.ui.screen
+package com.example.neosynk.ui.screen.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
