@@ -16,8 +16,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun LoginScreen(
@@ -177,3 +179,9 @@ fun textFieldColors() = TextFieldDefaults.colors(
     focusedTextColor = Color.White,
     unfocusedTextColor = Color.White
 )
+
+@Preview(showBackground = true)
+@Composable
+fun MyComposablePreview() {
+    LoginScreen(navController = rememberNavController())
+}

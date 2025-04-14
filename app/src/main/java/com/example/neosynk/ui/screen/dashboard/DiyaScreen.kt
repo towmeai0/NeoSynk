@@ -34,6 +34,7 @@ import kotlin.math.PI
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewModel()) {
+    /*
     var userInput by remember { mutableStateOf(TextFieldValue("")) }
     var isListening by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(false) }
@@ -159,8 +160,11 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
             }
         }
     }
+
+     */
 }
 
+/*
 @Composable
 fun ChatBubble(message: ChatEntity) {
     val bgColor = if (message.isUser) Color(0xFF4CAF50) else Color(0xFF333333)
@@ -178,6 +182,8 @@ fun ChatBubble(message: ChatEntity) {
         }
     }
 }
+
+ */
 
 @Composable
 fun VoiceOrb(

@@ -27,33 +27,9 @@ fun HomeScreen(
     val darkBackground = Color(0xFF121212)
     val orange = Color(0xFFFF9800)
     var selectedTab by remember { mutableStateOf("Live Feed") }
-    var selectedBottom by remember { mutableIntStateOf(0) }
-
-    val bottomScreen = listOf(
-        Screen.Home.route,
-        Screen.UploadScreen.route,
-        Screen.DocsScreen.route,
-        Screen.DiyaScreen.route
-    )
-
-    // Track the current screen route
-    val currentScreen = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
-        containerColor = darkBackground,
-        bottomBar = {
-            // Hide bottom navigation on Login or SplashScreen
-            if (currentScreen !in listOf(Screen.Login.route, Screen.SplashScreen.route)) {
-                BottomNavigationBar(selectedBottom) { index ->
-                    selectedBottom = index
-                    navController.navigate(bottomScreen[index]) {
-                        popUpTo(Screen.Home.route) { inclusive = false }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            }
-        }
+        containerColor = darkBackground
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -154,29 +130,4 @@ fun MilestonesTab() {
     Text(text = "Milestones Content", color = Color.White)
 }
 
-@Composable
-fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
-    val orange = Color(0xFFFF9800)
-    // Set a solid background for the Bottom Navigation Bar
-    NavigationBar(containerColor = Color(0xFF1E1E1E)) {
-        val items = listOf(
-            Icons.Filled.Home,
-            Icons.Filled.ArrowUpward,
-            Icons.Filled.Description,
-            Icons.Filled.Monitor
-        )
-        items.forEachIndexed { index, icon ->
-            NavigationBarItem(
-                selected = selectedItem == index,
-                onClick = { onItemSelected(index) },
-                icon = {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = if (selectedItem == index) orange else Color.White
-                    )
-                }
-            )
-        }
-    }
-}
+

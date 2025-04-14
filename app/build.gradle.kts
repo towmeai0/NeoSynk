@@ -2,10 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
     id("com.google.dagger.hilt.android")
-
-
 }
 
 android {
@@ -56,17 +54,16 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-
-
-    implementation(libs.hilt.android.v250)
-    ksp(libs.hilt.compiler.v250)
-    implementation(libs.androidx.hilt.navigation.compose.v110)
-    implementation(libs.androidx.hilt.lifecycle.viewmodel)
-    ksp(libs.androidx.hilt.compiler) //
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.media3.common.ktx)
+    ksp(libs.hilt.compiler)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Room Dependencies
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
 
     // Retrofit
