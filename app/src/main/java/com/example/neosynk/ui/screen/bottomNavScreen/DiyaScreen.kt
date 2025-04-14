@@ -53,7 +53,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
                 delay(300)
             }
         }
-        delay(5000) // simulate 5 seconds of listening
+        delay(11000) // simulate 5 seconds of listening
         isListening = false
         viewModel.sendMessage("This is a voice input!") // dummy voice message
     }
@@ -66,9 +66,9 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
     ) {
         TopAppBar(
             title = {
-                Text("Chat", color = Color.White, fontSize = 20.sp)
+                Text("Diya", color = Color.White, fontSize = 30.sp)
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.DarkGray)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -189,7 +189,7 @@ fun VoiceOrb(
         initialValue = 0f,
         targetValue = (2 * PI).toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing)
+            animation = tween(2000, easing = LinearEasing)
         ),
         label = "wave_shift"
     )
@@ -198,21 +198,21 @@ fun VoiceOrb(
         val center = size.center
         val radius = size.minDimension / 2
 
-        // Outer glowing orb
+        // Outer glowing orb - Increased size
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(Color.Cyan.copy(alpha = 0.5f), Color.Transparent),
                 center = center,
-                radius = radius * 2.4f
+                radius = radius * 3.0f  // Increased radius multiplier
             ),
-            radius = radius * 2.4f,
+            radius = radius * 3.0f,  // Increased radius multiplier
             center = center
         )
 
         // Inner solid orb
         drawCircle(
             color = Color(0xFF1E1E2F),
-            radius = radius,
+            radius = radius * 1.5f,  // Increased radius for the inner orb
             center = center
         )
 
