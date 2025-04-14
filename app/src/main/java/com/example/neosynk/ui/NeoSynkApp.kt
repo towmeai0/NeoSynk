@@ -41,7 +41,8 @@ fun NeoSynkApp() {
         containerColor = darkBackground,
         bottomBar = {
             // Hide bottom navigation on Login or SplashScreen
-            if (currentScreen !in listOf(Screen.Login.route, Screen.SplashScreen.route , Screen.KidsLoginScreen.route)) {
+            if (currentScreen !in listOf(Screen.Login.route, Screen.SplashScreen.route , Screen.KidsLoginScreen.route ,
+                    Screen.DiyaScreen.route)) {
                 BottomNavigationBar(selectedBottom) { index ->
                     selectedBottom = index
                     navController.navigate(bottomScreen[index]) {

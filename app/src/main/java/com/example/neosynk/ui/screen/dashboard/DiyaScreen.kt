@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.material.icons.filled.ArrowBack
+
 import com.example.neosynk.viewmodel.ChatViewModel
 import com.example.neosynk.data.database.chatdatabase.ChatEntity
 import kotlinx.coroutines.delay
@@ -33,30 +35,29 @@ import kotlin.math.PI
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewModel()) {
-    /*
+fun DiyaScreen(navController: NavController) {
     var userInput by remember { mutableStateOf(TextFieldValue("")) }
     var isListening by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(false) }
-    val messages = viewModel.messages
+    val scope = rememberCoroutineScope()
+
+    // Local messages list instead of ViewModel
+    var messages by remember { mutableStateOf(listOf<ChatEntity>()) }
 
     val voiceLevel = remember { Animatable(0.5f) }
-    val scope = rememberCoroutineScope()
 
     // Simulate audio-first listening on screen launch
     LaunchedEffect(Unit) {
         isListening = true
-        // Animate fake voice levels for demo
         scope.launch {
             while (isListening) {
-                val newLevel = Random.nextFloat() * 0.7f + 0.3f  // gives a value between 0.3f and 1.0f
+                val newLevel = Random.nextFloat() * 0.7f + 0.3f
                 voiceLevel.animateTo(newLevel, animationSpec = tween(300))
                 delay(300)
             }
         }
-        delay(11000) // simulate 5 seconds of listening
+        delay(11000)
         isListening = false
-        viewModel.sendMessage("This is a voice input!") // dummy voice message
     }
 
     Column(
@@ -68,6 +69,20 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
         TopAppBar(
             title = {
                 Text("Diya", color = Color.White, fontSize = 30.sp)
+            },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+            },
+            actions = {
+                TextButton(onClick = { showKeyboard = !showKeyboard }) {
+                    Text("Keyboard", color = Color.White)
+                }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
         )
@@ -81,13 +96,18 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
                 .padding(8.dp),
             reverseLayout = true
         ) {
-            items(messages.reversed(), key = { it.id }) { message ->
-                ChatBubble(message)
-                Spacer(modifier = Modifier.height(8.dp))
+            items(messages.reversed()) { message ->
+                Text(
+                    text = "${message.sender}: ${message.message}",
+                    color = Color.White,
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .background(Color.DarkGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                )
             }
         }
 
-        // Show futuristic voice orb animation centered
         if (isListening) {
             Box(
                 modifier = Modifier
@@ -96,8 +116,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
                 contentAlignment = Alignment.Center
             ) {
                 VoiceOrb(
-                    modifier = Modifier
-                        .size(100.dp),
+                    modifier = Modifier.size(100.dp),
                     voiceLevel = voiceLevel.value
                 )
             }
@@ -105,7 +124,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Button to show/hide keyboard input field
         Button(
             onClick = { showKeyboard = !showKeyboard },
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -113,7 +131,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
             Text("Keyboard")
         }
 
-        // Input Field + Send Button (visible only when keyboard is shown)
+
         if (showKeyboard) {
             Row(
                 modifier = Modifier
@@ -146,7 +164,28 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
                 IconButton(onClick = {
                     val text = userInput.text.trim()
                     if (text.isNotEmpty()) {
-                        viewModel.sendMessage(text)
+                        val userMsg = ChatEntity(
+                            message = text,
+                            sender = "You"
+                        )
+                        messages = messages + userMsg
+
+                        // Simulate bot reply after delay
+                        scope.launch {
+                            delay(1000)
+                            val replyText = if (text.contains("hi", ignoreCase = true)) {
+                                "Hey there!"
+                            } else {
+                                "I'm still learning."
+                            }
+
+                            val botMsg = ChatEntity(
+                                message = replyText,
+                                sender = "Bot"
+                            )
+                            messages = messages + botMsg
+                        }
+
                         userInput = TextFieldValue("")
                         isListening = false
                     }
@@ -160,30 +199,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = viewMode
             }
         }
     }
-
-     */
 }
-
-/*
-@Composable
-fun ChatBubble(message: ChatEntity) {
-    val bgColor = if (message.isUser) Color(0xFF4CAF50) else Color(0xFF333333)
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .background(bgColor, RoundedCornerShape(12.dp))
-                .padding(12.dp)
-        ) {
-            Text(text = message.message, color = Color.White)
-        }
-    }
-}
-
- */
 
 @Composable
 fun VoiceOrb(
