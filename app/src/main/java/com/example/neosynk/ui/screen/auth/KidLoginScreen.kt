@@ -19,6 +19,11 @@ import androidx.navigation.NavController
 
 @Composable
 fun KidsLoginScreen(navController: NavController) {
+    // Local state for text fields
+    var name by remember { mutableStateOf("") }
+    var dob by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -70,18 +75,18 @@ fun KidsLoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
 
             // Input Fields
-            CustomTextField(hint = "Name")
+            ProfileInputField(hint = "Name", value = name, onValueChange = { name = it })
             Spacer(modifier = Modifier.height(12.dp))
-            CustomTextField(hint = "Date of Birth")
+            ProfileInputField(hint = "Date of Birth", value = dob, onValueChange = { dob = it })
             Spacer(modifier = Modifier.height(12.dp))
-            CustomTextField(hint = "Gender")
+            ProfileInputField(hint = "Gender", value = gender, onValueChange = { gender = it })
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Continue Button
             Button(
                 onClick = {
-                    navController.navigate("home")
+                    navController.navigate("home") // Use proper route when integrated with the NavGraph
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(24.dp),
@@ -96,12 +101,10 @@ fun KidsLoginScreen(navController: NavController) {
 }
 
 @Composable
-fun CustomTextField(hint: String) {
-    var text by remember { mutableStateOf("") }
-
+fun ProfileInputField(hint: String, value: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
-        value = text,
-        onValueChange = { text = it },
+        value = value,
+        onValueChange = onValueChange,
         placeholder = {
             Text(hint, color = Color.LightGray)
         },
