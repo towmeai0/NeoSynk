@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.TextFieldValue
-import kotlin.random.Random
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -25,8 +24,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import kotlin.math.sin
 import kotlin.math.PI
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,16 +55,15 @@ fun DiyaScreen(navController: NavController) {
                 delay(300)
             }
         }
-        delay(11000)
-        isListening = false
+        isListening = true
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
     ) {
+        // TopAppBar aligned at the very top
         TopAppBar(
             title = {
                 Text("Diya", color = Color.White, fontSize = 30.sp)
@@ -81,11 +82,13 @@ fun DiyaScreen(navController: NavController) {
                     Text("Keyboard", color = Color.White)
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black),
+            modifier = Modifier.fillMaxWidth() // Ensure it spans the full width
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp)) // Spacer to provide breathing room
 
+        // Content below the TopAppBar
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -109,8 +112,9 @@ fun DiyaScreen(navController: NavController) {
         if (isListening && !showKeyboard) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 VoiceOrb(
@@ -121,7 +125,7 @@ fun DiyaScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-
+        // Keyboard input section
         if (showKeyboard) {
             Row(
                 modifier = Modifier

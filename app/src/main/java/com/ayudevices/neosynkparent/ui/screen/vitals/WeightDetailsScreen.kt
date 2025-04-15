@@ -28,12 +28,6 @@ fun WeightDetailsScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             // Top Title
-            Text(
-                text = "Vitals SPO2 rate",
-                color = white,
-                fontSize = 24.sp,
-                modifier = Modifier.align(Alignment.Start)
-            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -49,15 +43,14 @@ fun WeightDetailsScreen(navController: NavController) {
                         .background(Color(0xFF1E1E1E))
                         .padding(16.dp)
                 ) {
-                    // SPO2 level
                     Text(
-                        text = "SPO2 Level:",
+                        text = "Weight",
                         color = white,
                         fontSize = 16.sp
                     )
 
                     Text(
-                        text = "98%", // Example data; this can be dynamic
+                        text = "10kg", // Example data; this can be dynamic
                         color = orange,
                         fontSize = 28.sp,
                         modifier = Modifier.padding(top = 8.dp)
@@ -88,15 +81,15 @@ fun WeightDetailsScreen(navController: NavController) {
                         .background(Color(0xFF1E1E1E))
                         .padding(16.dp)
                 ) {
-                    // Weight data
+
                     Text(
-                        text = "Weight Details:",
+                        text = "Height Details:",
                         color = white,
                         fontSize = 16.sp
                     )
 
                     Text(
-                        text = "72 kg", // Example data; dynamic input expected here
+                        text = "49 cm", // Example data; dynamic input expected here
                         color = orange,
                         fontSize = 28.sp,
                         modifier = Modifier.padding(top = 8.dp)

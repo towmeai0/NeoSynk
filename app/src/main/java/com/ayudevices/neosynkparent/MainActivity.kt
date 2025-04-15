@@ -10,6 +10,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.ayudevices.neosynkparent.ui.NeoSynkApp
 import com.ayudevices.neosynkparent.ui.theme.NeoSynkTheme
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
 
         //  Get FCM Token

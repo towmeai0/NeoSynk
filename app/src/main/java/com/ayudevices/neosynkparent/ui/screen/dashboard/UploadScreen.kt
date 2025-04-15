@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.ayudevices.neosynkparent.ui.theme.AppBackground
 import com.ayudevices.neosynkparent.ui.theme.appBarColor
 import com.ayudevices.neosynkparent.ui.theme.orange
 
@@ -25,74 +24,76 @@ import com.ayudevices.neosynkparent.ui.theme.orange
 @Composable
 fun UploadScreen(navController: NavController) {
     var selectedFileName by remember { mutableStateOf<String?>(null) }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppBackground)
-            .padding(16.dp)
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
     ) {
-        TopAppBar(
-            title = { Text("Upload File", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarColor)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-                .background(appBarColor.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-                .clickable {
-                    // TODO: Replace with file picker logic. For now, set a dummy file name.
-                    selectedFileName = "example_document.pdf"
-                },
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.CloudUpload,
-                    contentDescription = "Upload Icon",
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Tap to select a file", color = Color.White)
+            TopAppBar(
+                title = { Text("Upload File", color = Color.White) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
+                    .background(appBarColor.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                    .clickable {
+                        selectedFileName = "example_document.pdf"
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.CloudUpload,
+                        contentDescription = "Upload Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Tap to select a file", color = Color.White)
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        selectedFileName?.let {
-            Text(
-                text = "Selected File: $it",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Light
-            )
-        }
+            selectedFileName?.let {
+                Text(
+                    text = "Selected File: $it",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Light
+                )
+            }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                // TODO: Implement file upload logic.
-                // Consider using a ViewModel and show a progress indicator during upload.
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = orange),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.AttachFile,
-                contentDescription = "Attach File",
-                tint = Color.White
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Upload", color = Color.White)
+            Button(
+                onClick = {
+                    // TODO: Implement file upload logic.
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = orange),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AttachFile,
+                    contentDescription = "Attach File",
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Upload", color = Color.White)
+            }
         }
     }
 }
