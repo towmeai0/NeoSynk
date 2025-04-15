@@ -19,6 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NeoSynk"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
         <!-- Main Activity -->
@@ -35,7 +36,7 @@
 
         <!-- Firebase Messaging Service -->
         <service
-            android:name=".fcm.MyFirebaseMessagingService"
+            android:name=".data.network.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

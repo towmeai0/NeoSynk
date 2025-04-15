@@ -66,13 +66,14 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-messaging-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.analytics.ktx)
 
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.gson)
+    implementation(libs.logging.interceptor)
 
     // Testing Dependencies
     testImplementation(libs.junit)

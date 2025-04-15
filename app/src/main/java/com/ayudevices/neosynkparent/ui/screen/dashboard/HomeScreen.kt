@@ -39,7 +39,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            HeaderSection(onBotClick = { /* TODO: Add your Bot button action */ })
+            HeaderSection(onBotClick = {  })
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -54,6 +54,12 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                 Tab.LIVE_FEED -> LiveFeedTab()
                 Tab.VITALS -> VitalsTab(navController)
                 Tab.MILESTONES -> MilestonesTab()
+            }
+
+            Button(
+                onClick = {viewModel.reqVitals()}
+            ) {
+                Text("Request Vitals")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

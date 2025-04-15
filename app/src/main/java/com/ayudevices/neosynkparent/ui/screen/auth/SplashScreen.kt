@@ -16,6 +16,7 @@ import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
 import com.ayudevices.neosynkparent.ui.theme.AppBackground
 import com.ayudevices.neosynkparent.ui.theme.CardBackground
+import javax.inject.Inject
 
 @Composable
 fun SplashScreen(
@@ -92,6 +93,11 @@ fun SplashScreen(
                         lineHeight = 20.sp
                     )
                     Button(
+                        onClick = {}
+                    ) {
+                        Text("Request Vitals")
+                    }
+                    Button(
                         onClick = {
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(Screen.SplashScreen.route) { inclusive = true }
@@ -110,3 +116,4 @@ fun SplashScreen(
         }
     }
 }
+
