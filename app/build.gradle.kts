@@ -4,14 +4,15 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.27"
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.neosynk"
+    namespace = "com.ayudevices.neosynkparent"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.neosynk"
+        applicationId = "com.ayudevices.neosynkparent"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -65,6 +66,9 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
     // Retrofit
     implementation(libs.retrofit)

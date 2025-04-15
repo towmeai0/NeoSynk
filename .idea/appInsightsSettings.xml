@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.ayudevices.neosynkparent" />
+                  <option name="mobileSdkAppId" value="1:107095965626:android:b2425638acdb9c41cfe783" />
+                  <option name="projectId" value="ayusharebhavnagardb" />
+                  <option name="projectNumber" value="107095965626" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

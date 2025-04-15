@@ -1,0 +1,415 @@
+{
+  "project_info": {
+    "project_number": "107095965626",
+    "firebase_url": "https://ayusharebhavnagardb.firebaseio.com",
+    "project_id": "ayusharebhavnagardb",
+    "storage_bucket": "ayusharebhavnagardb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:b32cb90486c0fdffcfe783",
+        "android_client_info": {
+          "package_name": "com.ayu.ayushare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-6qpsoqkmlc26c1rij2r0sgtfr50t0f0t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayu.ayushare",
+            "certificate_hash": "c99760f891427ce210d668d94053d3341587aa55"
+          }
+        },
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:1dea09cc330933b2cfe783",
+        "android_client_info": {
+          "package_name": "com.ayudevices.ayushare2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-19ic7l3qbreuv1dhf6dksrl36dvvm9t6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayudevices.ayushare2",
+            "certificate_hash": "c3ec7552809444117a1bed2c7b67c21eb70af64d"
+          }
+        },
+        {
+          "client_id": "107095965626-5lee0heumrhok30fsqqqkpuejmuaa5ol.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayudevices.ayushare2",
+            "certificate_hash": "382bc89f50e94c264ac6219b46c852625a272091"
+          }
+        },
+        {
+          "client_id": "107095965626-jbc505kia3ml97tcbk7jb0lakgnbfni9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayudevices.ayushare2",
+            "certificate_hash": "4f80042b65dd62926f9cd8dcbde87085bccfdc03"
+          }
+        },
+        {
+          "client_id": "107095965626-p7gfefeebe2jtmns7vs8ikt71ug1824p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayudevices.ayushare2",
+            "certificate_hash": "53bd0ed5ea554967bba99ab5ef1deea19d2459f4"
+          }
+        },
+        {
+          "client_id": "107095965626-vfeapa7rlums2d9g3i8bgjdvlpr74umo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayudevices.ayushare2",
+            "certificate_hash": "3682dff0f0074c7ae5930cbbcbb35c59e81432c0"
+          }
+        },
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:386b90cdc3a47b1acfe783",
+        "android_client_info": {
+          "package_name": "com.ayudevices.ayushare_beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-0vasvnosrq8fo2koapf5orav8pqrds82.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ayudevices.ayushare_beta",
+            "certificate_hash": "53bd0ed5ea554967bba99ab5ef1deea19d2459f4"
+          }
+        },
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:c30e77ed6266022acfe783",
+        "android_client_info": {
+          "package_name": "com.ayudevices.murata"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:b2425638acdb9c41cfe783",
+        "android_client_info": {
+          "package_name": "com.ayudevices.neosynkparent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:717a5d8e7e19f93c",
+        "android_client_info": {
+          "package_name": "com.devices.ayu.ayurev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:7cc88a01f7ca0bf1cfe783",
+        "android_client_info": {
+          "package_name": "com.example.graphhelper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:83dff6c36bf1d537cfe783",
+        "android_client_info": {
+          "package_name": "com.newdev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-3sp44k1cldd2e4ahrd8p32aop7gaafln.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.newdev",
+            "certificate_hash": "b0b43094c538ba228117a748575867a3bdba07ed"
+          }
+        },
+        {
+          "client_id": "107095965626-kkjvmh9sagqgi2qcphbua579i1i0v4k4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.newdev",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107095965626:android:8b50ea97105ba22b",
+        "android_client_info": {
+          "package_name": "devices.ayu.com.ayusharebn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107095965626-0qfcr4gdgcgsu61egjgbrq077hk3kafo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "devices.ayu.com.ayusharebn",
+            "certificate_hash": "c99760f891427ce210d668d94053d3341587aa55"
+          }
+        },
+        {
+          "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfTeH-djUWnNNkmgfkuTug5h42eW6fMB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107095965626-910h6ra4nqj5sqe1oe0cedmsf0lsm835.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ayudevices.ayuShare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
