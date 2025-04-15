@@ -5,10 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -25,23 +25,23 @@ import com.ayudevices.neosynkparent.ui.theme.darkBackground
 import com.ayudevices.neosynkparent.ui.theme.orange
 import com.ayudevices.neosynkparent.viewmodel.HomeViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
     val selectedTab = viewModel.selectedTab.collectAsState()
 
-    Scaffold(containerColor = darkBackground) { innerPadding ->
+    Scaffold(
+        containerColor = darkBackground,
+
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(darkBackground)
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
-
-            HeaderSection(onBotClick = {  })
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             TabSection(
                 selectedTab = selectedTab.value,
@@ -56,42 +56,22 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                 Tab.MILESTONES -> MilestonesTab()
             }
 
-            Button(
-                onClick = {viewModel.reqVitals()}
-            ) {
-                Text("Request Vitals")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             DynamicContent(selectedTab = selectedTab.value)
         }
     }
 }
 
-@Composable
-fun HeaderSection(onBotClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "NeoSynk",
-            color = Color.White,
-            fontSize = 38.sp,
-            fontWeight = FontWeight.SemiBold
-        )
 
-
-    }
-}
 
 @Composable
 fun TabSection(selectedTab: Tab, onTabSelected: (Tab) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         Tab.values().forEach { tab ->
             Button(
@@ -103,9 +83,10 @@ fun TabSection(selectedTab: Tab, onTabSelected: (Tab) -> Unit) {
                 shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .weight(1f)
+                    .height(42.dp)
                     .padding(horizontal = 4.dp)
             ) {
-                Text(tab.label)
+                Text(tab.label, fontSize = 14.sp)
             }
         }
     }
@@ -118,16 +99,26 @@ fun DynamicContent(selectedTab: Tab) {
             .fillMaxWidth()
             .height(250.dp)
             .border(BorderStroke(2.dp, orange), shape = RoundedCornerShape(16.dp))
-            .background(darkBackground, shape = RoundedCornerShape(16.dp)),
+            .background(darkBackground, shape = RoundedCornerShape(16.dp))
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text("Dynamic Content for \"${selectedTab.label}\"", color = Color.White)
+        Text(
+            text = "Dynamic Content for \"${selectedTab.label}\"",
+            color = Color.White,
+            fontSize = 16.sp
+        )
     }
 }
 
 @Composable
 fun LiveFeedTab() {
-    Text(text = "Live Feed Content", color = Color.White)
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Live feed UI
+    }
 }
 
 @Composable
@@ -137,5 +128,10 @@ fun VitalsTab(navController: NavController) {
 
 @Composable
 fun MilestonesTab() {
-    Text(text = "Milestones Content", color = Color.White)
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Milestones UI
+    }
 }

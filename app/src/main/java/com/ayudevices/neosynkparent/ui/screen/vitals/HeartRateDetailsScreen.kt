@@ -26,31 +26,6 @@ fun HeartRateDetailsScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf("VitalsScreen") }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Vitals Heart Rate", color = Color.White, fontSize = 14.sp)
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White)
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-            )
-        },
         containerColor = Color.Black
     ) { padding ->
         Column(
@@ -59,16 +34,16 @@ fun HeartRateDetailsScreen(navController: NavController) {
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = "Heart Rate",
                 fontSize = 24.sp,
                 color = Color.White,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 8.dp) // reduced top padding to make it closer to the top
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // Reduced vertical space here
 
             Card(
                 modifier = Modifier
@@ -81,7 +56,7 @@ fun HeartRateDetailsScreen(navController: NavController) {
                 GraphPlaceholder()
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // Reduced vertical space here
 
             Text(
                 text = "Results:",
@@ -90,7 +65,7 @@ fun HeartRateDetailsScreen(navController: NavController) {
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp)) // Reduced vertical space here
 
             Text(
                 text = "Your heart rate has remained within a healthy range.\n\n" +
@@ -170,4 +145,3 @@ fun GraphPlaceholder() {
         }
     }
 }
-

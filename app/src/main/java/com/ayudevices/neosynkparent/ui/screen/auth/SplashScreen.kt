@@ -16,7 +16,7 @@ import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
 import com.ayudevices.neosynkparent.ui.theme.AppBackground
 import com.ayudevices.neosynkparent.ui.theme.CardBackground
-import javax.inject.Inject
+import com.ayudevices.neosynkparent.ui.theme.neoSynkLightGreen
 
 @Composable
 fun SplashScreen(
@@ -27,26 +27,20 @@ fun SplashScreen(
             .fillMaxSize()
             .background(AppBackground)
     ) {
-        // Status Bar placeholder
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Add status indicators here if needed
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp),
         ) {
-            Spacer(modifier = Modifier.height(80.dp))
+            // Top Space or Status Bar Placeholder
+            Spacer(modifier = Modifier.height(40.dp))
 
-            Column {
+            // Main Welcome Texts
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
                 Text(
                     text = "Welcome to,",
                     color = Color.White,
@@ -55,10 +49,11 @@ fun SplashScreen(
                 )
                 Text(
                     text = "NeoSynk",
-                    color = MaterialTheme.colorScheme.primary,
+                    color =  neoSynkLightGreen,
                     fontSize = 70.sp,
                     fontWeight = FontWeight.Bold
                 )
+
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Nurturing Your\nNewborn, Every Beat",
@@ -69,22 +64,23 @@ fun SplashScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // Push bottom container to bottom
+            Spacer(modifier = Modifier.weight(1f))
 
-            // Bottom Rounded Info + CTA Container
+            // Bottom Info Container
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
                     .background(
                         color = CardBackground,
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
-                    .padding(24.dp)
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Ditch newborn guesswork with NeoSynk — your pocket guru tracking heart, growth, sleep and feeding for delightful details!",
@@ -92,11 +88,9 @@ fun SplashScreen(
                         fontSize = 14.sp,
                         lineHeight = 20.sp
                     )
-                    Button(
-                        onClick = {}
-                    ) {
-                        Text("Request Vitals")
-                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
                     Button(
                         onClick = {
                             navController.navigate(Screen.Login.route) {
@@ -116,4 +110,3 @@ fun SplashScreen(
         }
     }
 }
-

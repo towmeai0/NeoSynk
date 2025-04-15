@@ -17,3 +17,4 @@ val CardBackground = Color(0xFFEDEDED)
 val white = Color.White
 val redLine = Color.Red
 val appBarColor = Color.DarkGray
+val neoSynkLightGreen = Color(0xFFA8E0A8)

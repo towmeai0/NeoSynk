@@ -6,14 +6,15 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Monitor
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -24,6 +25,7 @@ import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.darkBackground
 import com.ayudevices.neosynkparent.ui.theme.orange
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NeoSynkApp(
     navController: NavHostController = rememberNavController()
@@ -31,18 +33,41 @@ fun NeoSynkApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val showBottomBar = when (currentDestination?.route) {
+    // Determine if the BottomBar and TopBar should be shown based on the screen route
+    val showTopAndBottomBar = currentDestination?.route !in listOf(
         Screen.Login.route,
         Screen.SplashScreen.route,
         Screen.DiyaScreen.route,
-        Screen.KidsLoginScreen.route -> false
-        else -> true
-    }
+        Screen.KidsLoginScreen.route
+    )
 
     Scaffold(
         containerColor = darkBackground,
+        topBar = {
+            if (showTopAndBottomBar) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "NeoSynk",
+                            color = Color.White,
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Notifications action */ }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        }
+                        IconButton(onClick = { /* Person icon action */ }) {
+                            Icon(Icons.Default.Person, contentDescription = "Person", tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                )
+            }
+        },
         bottomBar = {
-            if (showBottomBar) {
+            if (showTopAndBottomBar) {
                 BottomNavigationBar(
                     currentDestination = currentDestination,
                     onItemSelected = { screen ->

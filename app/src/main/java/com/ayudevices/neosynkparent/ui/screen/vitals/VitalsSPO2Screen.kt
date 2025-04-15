@@ -44,36 +44,6 @@ fun VitalsSPO2Screen(navController: NavController) {
                 .background(darkBackground)
                 .padding(16.dp)
         ) {
-            // Top Title
-            Text(
-                text = "Vitals SPO2 rate",
-                color = white,
-                fontSize = 14.sp,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Top Right Icons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    tint = white,
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = white
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Main Title
             Text(

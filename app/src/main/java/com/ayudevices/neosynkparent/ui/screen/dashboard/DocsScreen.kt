@@ -25,29 +25,34 @@ fun DocsScreen(
 ) {
     val selectedFileName by viewModel.selectedFileName.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(16.dp)
+    // Set background to full black
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
     ) {
-        TopAppBar(
-            title = { Text("PDF", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.DarkGray)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            TopAppBar(
+                title = { Text("PDF", color = Color.White) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+            )
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        FileSelectorBox(
-            onClick = {
-                // You can integrate an actual file picker here
-                viewModel.onFileSelected("example_document.pdf")
-            }
-        )
-
-        selectedFileName?.let {
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Selected file: $it", color = Color.White)
+
+            FileSelectorBox(
+                onClick = {
+                    // Placeholder for actual file picker
+                    viewModel.onFileSelected("example_document.pdf")
+                }
+            )
+
+            selectedFileName?.let {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("Selected file: $it", color = Color.White)
+            }
         }
     }
 }
@@ -59,7 +64,7 @@ fun FileSelectorBox(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(200.dp)
             .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-            .background(Color.DarkGray.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+            .background(Color.Black, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
