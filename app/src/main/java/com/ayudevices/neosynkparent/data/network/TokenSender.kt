@@ -32,7 +32,7 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestVitals(parentId: String = "parent_001" , childId: String = "child_002", reqVitals: List<String> = listOf<String>("weight")) {
+    fun requestVitals(parentId: String = "parent_001" , childId: String = "child_001", reqVitals: List<String> = listOf<String>("weight")) {
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -54,7 +54,7 @@ class TokenSender @Inject constructor(
                 val response = fcmApiService.fetchVitals(responseKey)
                 if (response.isSuccessful) {
                     val vitals = response.body()
-                    Log.d("Vitals", "Weight: ${vitals?.value} at ${vitals?.timestamp}")
+                    Log.d("Vitals", "Weight: ${vitals?.vital?.value} at ${vitals?.vital?.recordedAt}")
                 } else {
                     Log.e("Vitals", "Fetch failed: ${response.code()} ${response.message()}")
                 }

@@ -18,6 +18,8 @@ interface FcmApiService {
     @POST("vital-request")
     suspend fun requestVitals(@Body request: VitalsBodyRequest): Response<VitalsRequestResponse>
 
-    @GET("vitals/{response}")
-    suspend fun fetchVitals(@Path("response") responseKey: String): Response<VitalData>
+    @GET("vitals/{vitalId}")
+    suspend fun fetchVitals(@Path("vitalId") responseKey: String): Response<VitalData>
+
 }
+

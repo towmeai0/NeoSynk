@@ -58,6 +58,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Button(onClick = { viewModel.reqVitals() }) {
+                Text("Fetch Vitals")
+            }
+
             DynamicContent(selectedTab = selectedTab.value)
         }
     }

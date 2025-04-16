@@ -5,15 +5,16 @@ import com.ayudevices.neosynkparent.di.NetworkModule.TokenSenderEntryPoint
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlin.String
 import kotlin.text.get
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-    val entryPoint = EntryPointAccessors.fromApplication(
-        this,
-        TokenSenderEntryPoint::class.java
-    )
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            applicationContext,
+            TokenSenderEntryPoint::class.java
+        )
         if (remoteMessage.data.isNotEmpty()) {
             Log.d("FCM", "Message data payload: ${remoteMessage.data}")
         }
@@ -22,10 +23,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d("FCM", "Message Notification Body: ${it.body}")
         }
         val type = remoteMessage.data["type"] // Assume FCM payload contains "type" field
-        if (type == "vitals_ready") {
-            val responseKey = remoteMessage.data["responseKey"]
-            if (!responseKey.isNullOrEmpty()) {
-                entryPoint.tokenSender().fetchVitalsFromServer(responseKey)
+        if (type == "vital_completed") {
+            val vitalId = remoteMessage.data["vital_id"]
+            if (!vitalId.isNullOrEmpty()) {
+                entryPoint.tokenSender().fetchVitalsFromServer(vitalId)
             } else {
                 Log.e("Vitals", "Missing responseKey in FCM")
             }
@@ -34,6 +35,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            applicationContext,
+            TokenSenderEntryPoint::class.java
+        )
         super.onNewToken(token)
         Log.d("FCM", "Refreshed token: $token")
         entryPoint.tokenSender().sendFcmTokenToServer(token)
