@@ -3,6 +3,7 @@ package com.ayudevices.neosynkparent.di
 import android.content.Context
 import androidx.room.Room
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
+import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
 import com.ayudevices.neosynkparent.data.network.FcmApiService
 import dagger.Module
@@ -53,6 +54,13 @@ object NetworkModule{
     fun provideApiService(retrofit: Retrofit): FcmApiService {
         return retrofit.create(FcmApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideChatApiService(retrofit: Retrofit): ChatApiService {
+        return retrofit.create(ChatApiService::class.java)
+    }
+
 
     @Provides
     @Singleton
