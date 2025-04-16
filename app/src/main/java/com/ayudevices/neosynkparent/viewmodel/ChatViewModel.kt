@@ -16,9 +16,9 @@ class ChatViewModel @Inject constructor(
 
     val messages = repository.getAllMessages().asLiveData()
 
-    fun onSendMessage(userId: String, text: String) {
+    fun onSendMessage( text: String) {
         viewModelScope.launch {
-            repository.sendMessage(userId, text)
+            repository.sendMessage(text)
         }
     }
 }
