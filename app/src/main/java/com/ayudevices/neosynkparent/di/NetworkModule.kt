@@ -64,9 +64,13 @@ object NetworkModule{
     @Provides
     @Singleton
     fun provideTokenSender(
-        fcmApiService: FcmApiService
+        fcmApiService: FcmApiService,
+        chatDao: ChatDao
     ): TokenSender {
-        return TokenSender(fcmApiService)
+        return TokenSender(
+            fcmApiService,
+            chatDao
+        )
     }
 
     @InstallIn(SingletonComponent::class)

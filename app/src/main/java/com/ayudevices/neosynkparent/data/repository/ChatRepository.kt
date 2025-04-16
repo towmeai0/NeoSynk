@@ -30,7 +30,6 @@ class ChatRepository @Inject constructor(
             val botMessage = response.response.responseText ?: "Failed to get a valid response"
             val intent = response.response.intent
             Log.d("ChatRepository", "Intent:$intent")
-
             val replyMsg = ChatEntity(message = botMessage, sender = "bot")
             chatDao.insertMessage(replyMsg)
 

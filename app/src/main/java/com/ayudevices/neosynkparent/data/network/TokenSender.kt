@@ -1,6 +1,8 @@
 package com.ayudevices.neosynkparent.data.network
 
 import android.util.Log
+import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
+import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import kotlinx.coroutines.CoroutineScope
@@ -9,7 +11,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class TokenSender @Inject constructor(
-    private val fcmApiService: FcmApiService
+    private val fcmApiService: FcmApiService,
+    private val chatDao: ChatDao
 ) {
     fun sendFcmTokenToServer(token: String) {
         val request = FcmTokenRequest(
@@ -54,7 +57,16 @@ class TokenSender @Inject constructor(
                 val response = fcmApiService.fetchVitals(responseKey)
                 if (response.isSuccessful) {
                     val vitals = response.body()
-                    Log.d("Vitals", "Weight: ${vitals?.vital?.value} at ${vitals?.vital?.recordedAt}")
+                    if(vitals?.vital?.vitalType == "weight"){
+                        Log.d("Vitals", "Weight: ${vitals?.vital?.value} at ${vitals?.vital?.recordedAt}")
+                        val weightMessage = "The weight we got is ${vitals?.vital?.value} Kg"
+                        chatDao.insertMessage(ChatEntity(message = weightMessage , sender = "bot"))
+                    }
+                    if(vitals?.vital?.vitalType == "height"){
+                        Log.d("Vitals", "Height: ${vitals?.vital?.value} at ${vitals?.vital?.recordedAt}")
+                        val heightMessage = "The weight we got is ${vitals?.vital?.value} Cm"
+                        chatDao.insertMessage(ChatEntity(message = heightMessage , sender = "bot"))
+                    }
                 } else {
                     Log.e("Vitals", "Fetch failed: ${response.code()} ${response.message()}")
                 }
