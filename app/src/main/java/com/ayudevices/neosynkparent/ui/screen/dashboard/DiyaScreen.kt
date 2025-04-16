@@ -88,7 +88,28 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             reverseLayout = true
         ) {
             items(messages.reversed()) { message ->
-                ChatBubble(message)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    horizontalArrangement = if (message.sender == "user") Arrangement.End else Arrangement.Start
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = if (message.sender == "user") Color(0xFF4CAF50) else Color.DarkGray,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(12.dp)
+                            .widthIn(max = 280.dp)
+                    ) {
+                        Text(
+                            text = message.message,
+                            color = Color.White
+                        )
+                    }
+                }
+
             }
         }
 
@@ -152,23 +173,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ChatBubble(message: ChatEntity) {
-    val bgColor = if (message.sender == "user") Color(0xFF4CAF50) else Color(0xFF333333)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (message.sender == "user") Arrangement.End else Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .background(bgColor, RoundedCornerShape(12.dp))
-                .padding(12.dp)
-        ) {
-            Text(text = message.message, color = Color.White)
         }
     }
 }

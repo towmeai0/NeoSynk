@@ -18,8 +18,4 @@ class HomeViewModel @Inject constructor(
     fun selectTab(tab: Tab) {
         _selectedTab.value = tab
     }
-
-    fun reqVitals(){
-        tokenSender.requestVitals()
-    }
 }

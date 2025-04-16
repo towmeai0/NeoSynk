@@ -35,7 +35,7 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestVitals(parentId: String = "parent_001" , childId: String = "child_001", reqVitals: List<String> = listOf<String>("weight")) {
+    fun requestVitals(parentId: String = "parent_001" , childId: String = "child_001", reqVitals: List<String> ) {
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {
             try {
