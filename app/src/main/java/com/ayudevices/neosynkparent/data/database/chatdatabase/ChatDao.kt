@@ -16,4 +16,8 @@ interface ChatDao {
 
     @Query("DELETE FROM chat_messages")
     suspend fun clearChat()
+
+    @Query("SELECT * FROM chat_messages ORDER BY timestamp DESC LIMIT 1")
+    fun getLatestMessage(): Flow<ChatEntity?>
+
 }

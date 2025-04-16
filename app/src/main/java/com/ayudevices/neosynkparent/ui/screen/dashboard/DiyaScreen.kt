@@ -178,8 +178,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
 }
 
 
-
-
 @Composable
 fun VoiceOrb(
     modifier: Modifier = Modifier,
