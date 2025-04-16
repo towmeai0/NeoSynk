@@ -25,7 +25,7 @@ class ChatRepository @Inject constructor(
         chatDao.insertMessage(userMsg)
         try {
             val response = apiService.sendMessage(ChatRequest(userId,message))
-            val botMessage = response.response ?: "Failed to get a valid response"
+            val botMessage = response.response.responseText ?: "Failed to get a valid response"
             val replyMsg = ChatEntity(message = botMessage, sender = "bot")
             chatDao.insertMessage(replyMsg)
         } catch (e: Exception) {
