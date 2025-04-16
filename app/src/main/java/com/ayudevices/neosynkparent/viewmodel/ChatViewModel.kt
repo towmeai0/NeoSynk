@@ -14,11 +14,12 @@ class ChatViewModel @Inject constructor(
     private val repository: ChatRepository
 ) : ViewModel() {
 
-    val messages = repository.getAllMessages()
+    val messages = repository.getAllMessages().asLiveData()
 
-    fun onSendMessage(text: String) {
+    fun onSendMessage(userId: String, text: String) {
         viewModelScope.launch {
-            repository.sendMessage(text)
+            repository.sendMessage(userId, text)
         }
     }
 }
+

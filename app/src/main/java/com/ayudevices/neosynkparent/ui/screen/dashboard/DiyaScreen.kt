@@ -92,7 +92,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
-                    horizontalArrangement = if (message.sender == "user") Arrangement.End else Arrangement.Start
+                    horizontalArrangement = if (message. == "user") Arrangement.End else Arrangement.Start
                 ) {
                     Box(
                         modifier = Modifier
