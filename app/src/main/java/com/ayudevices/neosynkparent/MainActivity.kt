@@ -18,22 +18,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject lateinit var tokenSender: TokenSender
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        FirebaseApp.initializeApp(this)
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val token = task.result
-                tokenSender.sendFcmTokenToServer(token)
-                Log.d("FCM", "FCM Token: $token")
-                // TODO: Send token to your server if needed
-            } else {
-                Log.e("FCM", "Fetching FCM token failed", task.exception)
-            }
-        }
-
         setContent {
             NeoSynkTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
