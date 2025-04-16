@@ -61,7 +61,6 @@ object NetworkModule{
         return retrofit.create(ChatApiService::class.java)
     }
 
-
     @Provides
     @Singleton
     fun provideTokenSender(

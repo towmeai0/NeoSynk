@@ -8,6 +8,6 @@ import retrofit2.http.POST
 
 
 interface ChatApiService {
-    @POST("chat") // change endpoint accordingly
+    @POST("chat")
     suspend fun sendMessage(@Body request: ChatRequest): ChatResponse
 }
