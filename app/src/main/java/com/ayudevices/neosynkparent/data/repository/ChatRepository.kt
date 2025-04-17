@@ -34,6 +34,8 @@ class ChatRepository @Inject constructor(
             chatDao.insertMessage(replyMsg)
 
             if (intent == "weight_vital_request") {
+                val message = "Enter Yes or No to fetch the vitals from base app"
+                chatDao.insertMessage(ChatEntity(message = message, sender = "bot"))
                 while (true){
                     val latestMessage = chatDao.getLatestMessage().first()  // Safely get the latest ChatEntity
                     if (latestMessage?.message.equals("yes", ignoreCase = true)) {
@@ -53,6 +55,8 @@ class ChatRepository @Inject constructor(
             }
             if (intent == "height_vital_request") {
                 val latestMessage = chatDao.getLatestMessage().first()  // Safely get the latest ChatEntity
+                val message = "Enter Yes or No to fetch the vitals from base app"
+                chatDao.insertMessage(ChatEntity(message = message, sender = "bot"))
                 if (latestMessage?.message.equals("yes", ignoreCase = true)) {
                     tokenSender.requestVitals(
                         parentId = "parent_001",

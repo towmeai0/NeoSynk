@@ -65,14 +65,13 @@ class TokenSender @Inject constructor(
                     Log.e("Vitals", "User ID is null or empty.")
                     return@launch
                 }
-
                 val fetchResponse = fcmApiService.fetchVitals(responseKey)
                 if (fetchResponse.isSuccessful) {
                     val vitals = fetchResponse.body()
 
                     if (vitals?.vital?.vitalType == "weight") {
                         Log.d("Vitals", "Weight: ${vitals.vital.value} at ${vitals.vital.recordedAt}")
-                        val weightMessage = "The weight we got is ${vitals.vital.value} Kg"
+                        val weightMessage = "Weight:${vitals.vital.value} Kg"
                         val chatResponse = chatApiService.sendMessage(ChatRequest(userId, message = "${vitals.vital.value}"))
                         chatDao.insertMessage(ChatEntity(message = weightMessage, sender = "bot"))
                         chatDao.insertMessage(ChatEntity(message = chatResponse.response.responseText, sender = "bot"))
@@ -80,7 +79,7 @@ class TokenSender @Inject constructor(
 
                     if (vitals?.vital?.vitalType == "height") {
                         Log.d("Vitals", "Height: ${vitals.vital.value} at ${vitals.vital.recordedAt}")
-                        val heightMessage = "The height we got is ${vitals.vital.value} Cm"
+                        val heightMessage = "Height: ${vitals.vital.value} Cm"
                         val chatResponse = chatApiService.sendMessage(ChatRequest(userId, message = vitals.vital.value.toString()))
                         chatDao.insertMessage(ChatEntity(message = heightMessage, sender = "bot"))
                         chatDao.insertMessage(ChatEntity(message = chatResponse.response.responseText, sender = "bot"))
