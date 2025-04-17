@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDatabase
+import com.ayudevices.neosynkparent.data.database.chatdatabase.PendingIntentDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,4 +30,10 @@ object AppModule {
     fun provideChatDao(chatDatabase: ChatDatabase): ChatDao{
         return chatDatabase.chatDao()
     }
+
+    @Provides
+    fun providePendingIntentDao(chatDatabase: ChatDatabase): PendingIntentDao{
+        return chatDatabase.pendingIntentDao()
+    }
+
 }

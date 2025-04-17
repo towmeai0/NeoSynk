@@ -42,6 +42,7 @@ class TokenSender @Inject constructor(
     }
 
     fun requestVitals(parentId: String = "parent_001", childId: String = "child_001", reqVitals: List<String>) {
+        Log.d("Vitals", "Vital type: ${reqVitals}")
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -68,20 +69,17 @@ class TokenSender @Inject constructor(
                 val fetchResponse = fcmApiService.fetchVitals(responseKey)
                 if (fetchResponse.isSuccessful) {
                     val vitals = fetchResponse.body()
-
-                    if (vitals?.vital?.vitalType == "weight") {
-                        Log.d("Vitals", "Weight: ${vitals.vital.value} at ${vitals.vital.recordedAt}")
-                        val weightMessage = "Weight:${vitals.vital.value} Kg"
-                        val chatResponse = chatApiService.sendMessage(ChatRequest(userId, message = "${vitals.vital.value}"))
-                        chatDao.insertMessage(ChatEntity(message = weightMessage, sender = "bot"))
-                        chatDao.insertMessage(ChatEntity(message = chatResponse.response.responseText, sender = "bot"))
+                    val vitalMsg = when (vitals?.vital?.vitalType) {
+                        "weight" -> "Weight: ${vitals.vital.value} Kg"
+                        "height" -> "Height: ${vitals.vital.value} Cm"
+                        "spo2" -> "SpO2: ${vitals.vital.value} %"
+                        "heart_rate" -> "Heart Rate: ${vitals.vital.value} bpm"
+                        else -> null
                     }
-
-                    if (vitals?.vital?.vitalType == "height") {
-                        Log.d("Vitals", "Height: ${vitals.vital.value} at ${vitals.vital.recordedAt}")
-                        val heightMessage = "Height: ${vitals.vital.value} Cm"
-                        val chatResponse = chatApiService.sendMessage(ChatRequest(userId, message = vitals.vital.value.toString()))
-                        chatDao.insertMessage(ChatEntity(message = heightMessage, sender = "bot"))
+                    vitalMsg?.let {
+                        Log.d("Vitals", "${vitals?.vital?.vitalType}: ${vitals?.vital?.value} at ${vitals?.vital?.recordedAt}")
+                        chatDao.insertMessage(ChatEntity(message = it, sender = "bot"))
+                        val chatResponse = chatApiService.sendMessage(ChatRequest(userId, message = "${vitals?.vital?.value}"))
                         chatDao.insertMessage(ChatEntity(message = chatResponse.response.responseText, sender = "bot"))
                     }
                 } else {

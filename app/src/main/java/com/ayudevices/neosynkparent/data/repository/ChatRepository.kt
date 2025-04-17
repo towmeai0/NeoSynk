@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
+import com.ayudevices.neosynkparent.data.database.chatdatabase.PendingIntentDao
+import com.ayudevices.neosynkparent.data.database.chatdatabase.PendingIntentEntity
 import com.ayudevices.neosynkparent.data.model.ChatRequest
 import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
@@ -18,62 +20,89 @@ class ChatRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val chatDao: ChatDao,
     private val apiService: ChatApiService,
-    private val tokenSender: TokenSender
+    private val tokenSender: TokenSender,
+    private val pendingIntentDao: PendingIntentDao
 ) {
     suspend fun sendMessage(message: String) {
         val userId = UserIdManager.getUserId(context)
+        Log.d("ChatRepository", userId)
         val userMsg = ChatEntity(message = message, sender = "user")
         chatDao.insertMessage(userMsg)
 
         try {
+            val pendingIntent = pendingIntentDao.getPendingIntent()
+            if (pendingIntent?.isAwaitingResponse == true) {
+                when (message.lowercase()) {
+                    "yes" -> {
+                        tokenSender.requestVitals(
+                            parentId = "parent_001",
+                            childId = "child_001",
+                            reqVitals = listOf(pendingIntent.vitalType ?: return)
+                        )
+                        chatDao.insertMessage(
+                            ChatEntity(
+                                message = "${pendingIntent.vitalType} request sent successfully.",
+                                sender = "bot"
+                            )
+                        )
+                        pendingIntentDao.clearPendingIntent()
+                    }
+
+                    "no" -> {
+                        chatDao.insertMessage(
+                            ChatEntity(
+                                message = "Okay, not sending any vital data.",
+                                sender = "bot"
+                            )
+                        )
+                        pendingIntentDao.clearPendingIntent()
+                    }
+                }
+                return
+            }
+
             val response = apiService.sendMessage(ChatRequest(userId, message))
             val botMessage = response.response.responseText ?: "Failed to get a valid response"
             val intent = response.response.intent
             Log.d("ChatRepository", "Intent:$intent")
-            val replyMsg = ChatEntity(message = botMessage, sender = "bot")
-            chatDao.insertMessage(replyMsg)
+            Log.d("ChatRepository", "Message:$message")
+            chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot"))
 
-            if (intent == "weight_vital_request") {
-                val message = "Enter Yes or No to fetch the vitals from base app"
-                chatDao.insertMessage(ChatEntity(message = message, sender = "bot"))
-                while (true){
-                    val latestMessage = chatDao.getLatestMessage().first()  // Safely get the latest ChatEntity
-                    if (latestMessage?.message.equals("yes", ignoreCase = true)) {
-                        tokenSender.requestVitals(
-                            parentId = "parent_001",
-                            childId = "child_001",
-                            reqVitals = listOf("weight")
+            when (intent) {
+                "weight_vital_request", "height_vital_request", "heart_rate_vital_request", "spo2_vital_request" -> {
+                    val vitalType = when (intent) {
+                        "weight_vital_request" -> "weight"
+                        "height_vital_request" -> "height"
+                        "heart_rate_vital_request" -> "heart_rate"
+                        "spo2_vital_request" -> "spo2"
+                        else -> null
+                    }
+                    if (vitalType != null) {
+                        pendingIntentDao.setPendingIntent(
+                            PendingIntentEntity(
+                                vitalType = vitalType,
+                                isAwaitingResponse = true
+                            )
                         )
-                        Log.d("ChatRepository", "Weight Vital API triggered due to user consent")
-                        break
+                        chatDao.insertMessage(
+                            ChatEntity(
+                                message = "Enter Yes or No to fetch your $vitalType from the base app.",
+                                sender = "bot"
+                            )
+                        )
                     }
-                    if (latestMessage?.message.equals("no", ignoreCase = true)) {
-                        Log.d("ChatRepository", "User did not consent. No vital request made.")
-                        break
-                    }
-                }
-            }
-            if (intent == "height_vital_request") {
-                val latestMessage = chatDao.getLatestMessage().first()  // Safely get the latest ChatEntity
-                val message = "Enter Yes or No to fetch the vitals from base app"
-                chatDao.insertMessage(ChatEntity(message = message, sender = "bot"))
-                if (latestMessage?.message.equals("yes", ignoreCase = true)) {
-                    tokenSender.requestVitals(
-                        parentId = "parent_001",
-                        childId = "child_001",
-                        reqVitals = listOf("height")
-                    )
-                    Log.d("ChatRepository", "Height Vital API triggered due to user consent")
-                } else {
-                    Log.d("ChatRepository", "User did not consent. No vital request made.")
                 }
             }
         } catch (e: Exception) {
             Log.e("ChatRepository", "Error sending message", e)
-            val fallbackMsg = ChatEntity(message = "Failed to get reply", sender = "bot")
-            chatDao.insertMessage(fallbackMsg)
+            chatDao.insertMessage(
+                ChatEntity(
+                    message = "Something went wrong. Try again later.",
+                    sender = "bot",
+                    timestamp = System.currentTimeMillis()
+                )
+            )
         }
     }
-
     fun getAllMessages(): Flow<List<ChatEntity>> = chatDao.getAllMessages()
 }
