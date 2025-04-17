@@ -40,6 +40,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
     var isListening by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
     val voiceLevel = remember { Animatable(0.5f) }
 
     // Animate orb

@@ -59,7 +59,7 @@ class ChatRepository @Inject constructor(
                         childId = "child_001",
                         reqVitals = listOf("height")
                     )
-                    Log.d("ChatRepository", "Weight Vital API triggered due to user consent")
+                    Log.d("ChatRepository", "Height Vital API triggered due to user consent")
                 } else {
                     Log.d("ChatRepository", "User did not consent. No vital request made.")
                 }

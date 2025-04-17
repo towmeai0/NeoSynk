@@ -18,3 +18,11 @@ val white = Color.White
 val redLine = Color.Red
 val appBarColor = Color.DarkGray
 val neoSynkLightGreen = Color(0xFFA8E0A8)
+
+
+
+val LightDarkBackground = Color(0xFF1E1E1E)
+val WarmOrange = Color(0xFFFF9800)
+val WhiteText = Color.White
+val LightGrayText = Color(0xFFB0B0B0)
+val InactiveProgress = Color(0xFF2E2E2E)

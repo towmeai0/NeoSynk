@@ -65,11 +65,15 @@ object NetworkModule{
     @Singleton
     fun provideTokenSender(
         fcmApiService: FcmApiService,
-        chatDao: ChatDao
+        chatDao: ChatDao,
+        chatApiService: ChatApiService,
+        @ApplicationContext context: Context
     ): TokenSender {
         return TokenSender(
-            fcmApiService,
-            chatDao
+            fcmApiService = fcmApiService,
+            chatDao = chatDao,
+            chatApiService = chatApiService,
+            context  = context
         )
     }
 
