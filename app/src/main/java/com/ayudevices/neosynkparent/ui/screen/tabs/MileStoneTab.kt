@@ -17,17 +17,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
-import com.ayudevices.neosynkparent.ui.theme.darkBackground
-import com.ayudevices.neosynkparent.ui.theme.InactiveProgress
-import com.ayudevices.neosynkparent.ui.theme.LightDarkBackground
-import com.ayudevices.neosynkparent.ui.theme.LightGrayText
-import com.ayudevices.neosynkparent.ui.theme.WarmOrange
-import com.ayudevices.neosynkparent.ui.theme.WhiteText
+import com.ayudevices.neosynkparent.ui.theme.*
 
 @Composable
 fun MilestonesTab(navController: NavController) {
     var selectedTab by remember { mutableStateOf("0-2 Months") }
     val ageTabs = listOf("0-2 Months", "4-6 Months", "7-9 Months", "10-12 Months")
+    val progressPercent = 21 // ← Set this dynamically based on data
+    val sweepAngle = (progressPercent / 100f) * 360f
 
     Column(
         modifier = Modifier
@@ -41,14 +38,12 @@ fun MilestonesTab(navController: NavController) {
             colors = CardDefaults.cardColors(containerColor = LightDarkBackground),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "Overall Progress",
                     color = LightGrayText,
                     fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
 
                 Row(
@@ -58,8 +53,7 @@ fun MilestonesTab(navController: NavController) {
                     // Circular Progress
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(120.dp)
+                        modifier = Modifier.size(120.dp)
                     ) {
                         Canvas(modifier = Modifier.size(120.dp)) {
                             drawArc(
@@ -72,30 +66,32 @@ fun MilestonesTab(navController: NavController) {
                             drawArc(
                                 color = WarmOrange,
                                 startAngle = -90f,
-                                sweepAngle = 0f, // change this to real progress
+                                sweepAngle = sweepAngle,
                                 useCenter = false,
                                 style = Stroke(width = 12f, cap = StrokeCap.Round)
                             )
                         }
                         Text(
-                            text = "0%",
+                            text = "$progressPercent%",
                             color = WhiteText,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold
                         )
+
                     }
 
                     // 2x2 Grid of Milestones
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(start = 8.dp)
                     ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            MilestoneStatCard("Motor", "0%")
-                            MilestoneStatCard("Sensory", "0%")
+                            MilestoneStatCard("Motor", "10%")
+                            MilestoneStatCard("Sensory", "5%")
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            MilestoneStatCard("Communication", "0%")
-                            MilestoneStatCard("Feeding", "0%")
+                            MilestoneStatCard("Communication", "6%")
+                            MilestoneStatCard("Feeding", "7%")
                         }
                     }
                 }
@@ -104,13 +100,15 @@ fun MilestonesTab(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Age Tabs
+        // Age-Based Tabs
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             ageTabs.forEach { label ->
                 val isSelected = label == selectedTab
+                val (range, unit) = label.split(" ")
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -123,18 +121,26 @@ fun MilestonesTab(navController: NavController) {
                             shape = RoundedCornerShape(20.dp)
                         )
                         .clickable { selectedTab = label }
-                        .padding(vertical = 8.dp),
+                        .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = label,
-                        color = WhiteText,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = range,
+                            color = WhiteText,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = unit,
+                            color = WhiteText,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
         }
+
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -155,15 +161,24 @@ fun MilestoneStatCard(label: String, percent: String) {
             .height(50.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = darkBackground),
-        border = BorderStroke(1.dp, WarmOrange)
+        border = BorderStroke(2.dp, WarmOrange)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text(text = label, color = WhiteText, fontSize = 12.sp)
-            Text(text = percent, color = WhiteText, fontWeight = FontWeight.Bold)
+            Text(
+                text = label,
+                color = WhiteText,
+                fontSize = 12.sp
+            )
+            Text(
+                text = percent,
+                color = WhiteText,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
         }
     }
 }
@@ -176,7 +191,7 @@ fun MilestonePlaceholder() {
             .height(60.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(LightDarkBackground)
-            .padding(12.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(

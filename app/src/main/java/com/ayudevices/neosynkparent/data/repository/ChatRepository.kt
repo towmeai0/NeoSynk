@@ -30,14 +30,13 @@ class ChatRepository @Inject constructor(
             val botMessage = response.response.responseText ?: "Failed to get a valid response"
             val intent = response.response.intent
             Log.d("ChatRepository", "Intent:$intent")
-            val replyMsg = ChatEntity(message = botMessage, sender = "bot")
-            chatDao.insertMessage(replyMsg)
+            chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot"))
 
             if (intent == "weight_vital_request") {
-                val message = "Enter Yes or No to fetch the vitals from base app"
-                chatDao.insertMessage(ChatEntity(message = message, sender = "bot"))
-                while (true){
-                    val latestMessage = chatDao.getLatestMessage().first()  // Safely get the latest ChatEntity
+                chatDao.insertMessage(ChatEntity(message = "Enter Yes or No to fetch the weight vital from base app", sender = "bot"))
+
+                while (true) {
+                    val latestMessage = chatDao.getLatestMessage().first()
                     if (latestMessage?.message.equals("yes", ignoreCase = true)) {
                         tokenSender.requestVitals(
                             parentId = "parent_001",
@@ -48,30 +47,35 @@ class ChatRepository @Inject constructor(
                         break
                     }
                     if (latestMessage?.message.equals("no", ignoreCase = true)) {
-                        Log.d("ChatRepository", "User did not consent. No vital request made.")
+                        Log.d("ChatRepository", "User declined. Weight vital request not made.")
                         break
                     }
                 }
             }
+
             if (intent == "height_vital_request") {
-                val latestMessage = chatDao.getLatestMessage().first()  // Safely get the latest ChatEntity
-                val message = "Enter Yes or No to fetch the vitals from base app"
-                chatDao.insertMessage(ChatEntity(message = message, sender = "bot"))
-                if (latestMessage?.message.equals("yes", ignoreCase = true)) {
-                    tokenSender.requestVitals(
-                        parentId = "parent_001",
-                        childId = "child_001",
-                        reqVitals = listOf("height")
-                    )
-                    Log.d("ChatRepository", "Height Vital API triggered due to user consent")
-                } else {
-                    Log.d("ChatRepository", "User did not consent. No vital request made.")
+                chatDao.insertMessage(ChatEntity(message = "Enter Yes or No to fetch the height vital from base app", sender = "bot"))
+
+                while (true) {
+                    val latestMessage = chatDao.getLatestMessage().first()
+                    if (latestMessage?.message.equals("yes", ignoreCase = true)) {
+                        tokenSender.requestVitals(
+                            parentId = "parent_001",
+                            childId = "child_001",
+                            reqVitals = listOf("height")
+                        )
+                        Log.d("ChatRepository", "Height Vital API triggered due to user consent")
+                        break
+                    }
+                    if (latestMessage?.message.equals("no", ignoreCase = true)) {
+                        Log.d("ChatRepository", "User declined. Height vital request not made.")
+                        break
+                    }
                 }
             }
         } catch (e: Exception) {
             Log.e("ChatRepository", "Error sending message", e)
-            val fallbackMsg = ChatEntity(message = "Failed to get reply", sender = "bot")
-            chatDao.insertMessage(fallbackMsg)
+            chatDao.insertMessage(ChatEntity(message = "Failed to get reply", sender = "bot"))
         }
     }
 
