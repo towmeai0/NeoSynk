@@ -2,6 +2,7 @@ package com.ayudevices.neosynkparent.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import java.util.UUID
 import androidx.core.content.edit
 
