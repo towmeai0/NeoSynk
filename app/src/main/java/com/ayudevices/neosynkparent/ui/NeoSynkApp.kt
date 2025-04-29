@@ -1,6 +1,7 @@
 package com.ayudevices.neosynkparent.ui
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Description
@@ -13,13 +14,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.ayudevices.neosynkparent.R
 import com.ayudevices.neosynkparent.ui.navigation.NeoSynkNavHost
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.darkBackground
@@ -109,11 +113,21 @@ fun BottomNavigationBar(
                 selected = isSelected,
                 onClick = { onItemSelected(screen) },
                 icon = {
-                    Icon(
-                        icons[index],
-                        contentDescription = screen.route,
-                        tint = if (isSelected) orange else Color.White
-                    )
+                    if (screen.route == Screen.DiyaScreen.route) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.diya_icon),
+                            contentDescription = screen.route,
+                            modifier = Modifier.size(34.dp),
+                            tint = Color.Unspecified
+                        )
+                    } else {
+                        // Use default icons for other screens
+                        Icon(
+                            icons[index],
+                            contentDescription = screen.route,
+                            tint = if (isSelected) orange else Color.White
+                        )
+                    }
                 }
             )
         }

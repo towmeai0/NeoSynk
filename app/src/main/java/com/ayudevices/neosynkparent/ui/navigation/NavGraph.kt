@@ -19,6 +19,7 @@ import com.ayudevices.neosynkparent.ui.screen.dashboard.UploadScreen
 import com.ayudevices.neosynkparent.ui.screen.vitals.HeartRateDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.vitals.VitalsSPO2Screen
 
+
 @Composable
 fun NeoSynkNavHost(
     navController: NavHostController,

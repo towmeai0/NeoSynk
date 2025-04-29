@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "pending_intents")
 data class PendingIntentEntity(
     @PrimaryKey val id: Int = 0,
-    val vitalType: String?, // e.g., "weight", "height"
+    val vitalType: String?,
     val isAwaitingResponse: Boolean
+
 )

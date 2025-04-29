@@ -1,5 +1,12 @@
 package com.ayudevices.neosynkparent.ui.screen.dashboard
 
+import android.Manifest
+import android.content.Intent
+import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -15,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,31 +35,88 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.math.sin
 import kotlin.math.PI
+import android.content.pm.PackageManager
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalContext
+
 
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltViewModel()) {
+    val context = LocalContext.current
     val messages by viewModel.messages.collectAsState(initial = emptyList())
     var userInput by remember { mutableStateOf(TextFieldValue("")) }
     var isListening by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
     val voiceLevel = remember { Animatable(0.5f) }
 
-    // Animate orb
+    val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
+    val recognizerIntent = remember {
+        Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+        }
+    }
+
+    // Permission Launcher
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                startListening(speechRecognizer, recognizerIntent)
+            }
+        }
+    )
+    // Check for microphone permission and start listening only when the orb is visible
     LaunchedEffect(Unit) {
-        isListening = true
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            if (!showKeyboard) startListening(speechRecognizer, recognizerIntent)
+        } else {
+            launcher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+
+
         scope.launch {
             while (isListening) {
-                if (!showKeyboard) {
-                    val newLevel = Random.nextFloat() * 0.7f + 0.3f
-                    voiceLevel.animateTo(newLevel, animationSpec = tween(300))
-                }
+                val newLevel = Random.nextFloat() * 0.7f + 0.3f
+                voiceLevel.animateTo(newLevel, animationSpec = tween(300))
                 delay(300)
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        val listener = object : android.speech.RecognitionListener {
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                matches?.firstOrNull()?.let { spokenText ->
+                    viewModel.onSendMessage(spokenText)
+                }
+                // Automatically start listening again if voice orb is visible
+                if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
+            }
+
+            override fun onError(error: Int) {
+                // Retry automatically on error, check if orb is visible
+                if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
+            }
+
+            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        }
+        speechRecognizer.setRecognitionListener(listener)
+
+        onDispose {
+            speechRecognizer.destroy()
         }
     }
 
@@ -62,7 +125,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // AppBar
         TopAppBar(
             title = { Text("Diya", color = Color.White, fontSize = 30.sp) },
             navigationIcon = {
@@ -80,7 +142,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Messages list
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -104,18 +165,13 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                             .padding(12.dp)
                             .widthIn(max = 280.dp)
                     ) {
-                        Text(
-                            text = message.message,
-                            color = Color.White
-                        )
+                        Text(text = message.message, color = Color.White)
                     }
                 }
-
             }
         }
 
-        // Voice Orb
-        if (isListening && !showKeyboard) {
+        if (!showKeyboard) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -130,7 +186,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             }
         }
 
-        // Text input
         if (showKeyboard) {
             Row(
                 modifier = Modifier
@@ -164,6 +219,8 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                     if (text.isNotEmpty()) {
                         viewModel.onSendMessage(text)
                         userInput = TextFieldValue("")
+
+                        // Stop listening when keyboard is visible
                         isListening = false
                     }
                 }) {
@@ -175,9 +232,37 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                 }
             }
         }
+
+        if (messages.isNotEmpty() && messages.last().message.contains("Enter Yes or No") && showKeyboard) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = {
+                        viewModel.onSendMessage("yes")
+                    },
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text("Yes")
+                }
+                Button(
+                    onClick = {
+                        viewModel.onSendMessage("no")
+                    }
+                ) {
+                    Text("No")
+                }
+            }
+        }
     }
 }
 
+fun startListening(speechRecognizer: SpeechRecognizer, recognizerIntent: Intent) {
+    speechRecognizer.startListening(recognizerIntent)
+}
 
 @Composable
 fun VoiceOrb(
@@ -198,21 +283,19 @@ fun VoiceOrb(
         val center = size.center
         val radius = size.minDimension / 2
 
-        // Outer glowing orb - Increased size
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(Color.Cyan.copy(alpha = 0.5f), Color.Transparent),
                 center = center,
-                radius = radius * 3.0f  // Increased radius multiplier
+                radius = radius * 3.0f
             ),
-            radius = radius * 3.0f,  // Increased radius multiplier
+            radius = radius * 3.0f,
             center = center
         )
 
-        // Inner solid orb
         drawCircle(
             color = Color(0xFF1E1E2F),
-            radius = radius * 1.5f,  // Increased radius for the inner orb
+            radius = radius * 1.5f,
             center = center
         )
 

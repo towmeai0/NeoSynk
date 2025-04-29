@@ -11,5 +11,6 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor() : ViewModel() {
     var name by mutableStateOf("")
     var number by mutableStateOf("")
-    var location by mutableStateOf("")
+    var password by mutableStateOf("")
+    var email by mutableStateOf("")
 }

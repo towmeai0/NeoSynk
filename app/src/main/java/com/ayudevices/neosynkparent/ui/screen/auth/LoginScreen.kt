@@ -28,7 +28,8 @@ fun LoginScreen(
 ) {
     val name = viewModel.name
     val number = viewModel.number
-    val location = viewModel.location
+    val password= viewModel.password
+    val emailId= viewModel.email
 
     Column(
         modifier = Modifier
@@ -43,7 +44,6 @@ fun LoginScreen(
             color = Color.White,
             fontSize = 24.sp,
             fontWeight = FontWeight.Medium
-
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -83,11 +83,19 @@ fun LoginScreen(
         )
 
         CustomOutlinedField(
-            value = location,
-            onValueChange = { viewModel.location = it },
-            placeholder = "Location",
+            value = emailId,
+            onValueChange = { viewModel.email = it },
+            placeholder = "Email",
             borderColor = borderColor
         )
+
+        CustomOutlinedField(
+            value = password,
+            onValueChange = { viewModel.password = it },
+            placeholder = "password",
+            borderColor = borderColor
+        )
+
 
         Spacer(modifier = Modifier.height(24.dp))
 

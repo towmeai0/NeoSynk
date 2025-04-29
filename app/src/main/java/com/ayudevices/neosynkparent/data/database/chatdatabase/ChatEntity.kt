@@ -9,5 +9,6 @@ data class ChatEntity(
     val id: Int = 0,
     val message: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val sender: String
+    val sender: String,
+    val options: List<String>? = null
 )

@@ -12,8 +12,7 @@ import com.ayudevices.neosynkparent.data.network.TokenSender
 import com.ayudevices.neosynkparent.utils.UserIdManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
+
 import javax.inject.Inject
 
 class ChatRepository @Inject constructor(
@@ -47,7 +46,6 @@ class ChatRepository @Inject constructor(
                         )
                         pendingIntentDao.clearPendingIntent()
                     }
-
                     "no" -> {
                         chatDao.insertMessage(
                             ChatEntity(
@@ -87,7 +85,8 @@ class ChatRepository @Inject constructor(
                         chatDao.insertMessage(
                             ChatEntity(
                                 message = "Enter Yes or No to fetch your $vitalType from the base app.",
-                                sender = "bot"
+                                sender = "bot",
+                                options = listOf("Yes", "No")
                             )
                         )
                     }

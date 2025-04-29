@@ -19,7 +19,6 @@ import androidx.navigation.NavController
 
 @Composable
 fun KidsLoginScreen(navController: NavController) {
-    // Local state for text fields
     var name by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }

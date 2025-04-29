@@ -14,7 +14,7 @@ import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.ui.theme.orange
 import com.ayudevices.neosynkparent.ui.theme.white
 
-@Composable
+ @Composable
 fun WeightDetailsScreen(navController: NavController) {
     val darkBackground = Color(0xFF121212)
     Scaffold(
@@ -31,7 +31,7 @@ fun WeightDetailsScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // SPO2 Data Display
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -58,7 +58,7 @@ fun WeightDetailsScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // SPO2 level status
+
                     Text(
                         text = "Status: Normal",
                         color = white.copy(alpha = 0.7f),
@@ -108,3 +108,5 @@ fun WeightDetailsScreen(navController: NavController) {
         }
     }
 }
+
+
