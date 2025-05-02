@@ -1,5 +1,6 @@
 package com.ayudevices.neosynkparent.ui.screen.dashboard
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,12 +25,23 @@ import com.ayudevices.neosynkparent.ui.screen.tabs.MilestonesTab
 import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
 import com.ayudevices.neosynkparent.ui.theme.darkBackground
 import com.ayudevices.neosynkparent.ui.theme.orange
+import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
 import com.ayudevices.neosynkparent.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
+) {
     val selectedTab = viewModel.selectedTab.collectAsState()
+
+    Log.d("UserId" ,
+        "Email : ${authViewModel.getCurrentUser()?.email} \n," +
+                " Uid : ${authViewModel.getCurrentUser()?.uid} \n," +
+                "Tenantid : ${authViewModel.getCurrentUser()?.tenantId} \n,")
+
 
     Scaffold(
         containerColor = darkBackground,

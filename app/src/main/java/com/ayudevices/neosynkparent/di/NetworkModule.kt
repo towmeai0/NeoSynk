@@ -6,6 +6,7 @@ import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
 import com.ayudevices.neosynkparent.data.network.FcmApiService
+import com.ayudevices.neosynkparent.data.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.EntryPoint
@@ -67,13 +68,15 @@ object NetworkModule{
         fcmApiService: FcmApiService,
         chatDao: ChatDao,
         chatApiService: ChatApiService,
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        authRepository: AuthRepository
     ): TokenSender {
         return TokenSender(
             fcmApiService = fcmApiService,
             chatDao = chatDao,
             chatApiService = chatApiService,
-            context  = context
+            context = context,
+            authRepository = authRepository
         )
     }
 

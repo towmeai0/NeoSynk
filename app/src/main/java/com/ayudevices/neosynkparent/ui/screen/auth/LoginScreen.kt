@@ -1,201 +1,115 @@
 package com.ayudevices.neosynkparent.ui.screen.auth
 
-import androidx.compose.foundation.BorderStroke
+import android.util.Patterns
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.ayudevices.neosynkparent.viewmodel.LoginViewModel
+import com.ayudevices.neosynkparent.ui.screen.Screen
+import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
+import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    navController: NavController,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel(),
+    navController: NavHostController
 ) {
-    val name = viewModel.name
-    val number = viewModel.number
-    val password= viewModel.password
-    val emailId= viewModel.email
+    val email = remember { mutableStateOf("") }
+    val pass = remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF121212))
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(Color.Black)
     ) {
         Text(
-            text = "Parents Log In",
-            color = Color.White,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Medium
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Box(
+            "NeoSynk",
+            color = Color(0xFFB7FABD),
+            fontSize = 75.sp,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray)
+                .padding(bottom = 113.dp, start = 27.dp, end = 27.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Column(
+            modifier = Modifier
+                .padding(bottom = 287.dp, start = 16.dp, end = 16.dp)
+                .fillMaxWidth()
+        ) {
+            StyledTextField(value = email.value, onValueChange = { email.value = it }, label = "Email id or Mobile Number")
+            StyledTextField(value = pass.value, onValueChange = { pass.value = it }, label = "Password", isPassword = true)
+        }
 
-        Text(
-            text = "Upload Profile Picture",
-            color = Color.White,
-            fontSize = 14.sp
-        )
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        val borderColor = Color(0xFFFF9800)
-
-        CustomOutlinedField(
-            value = name,
-            onValueChange = { viewModel.name = it },
-            placeholder = "Name",
-            borderColor = borderColor
-        )
-
-        CustomOutlinedField(
-            value = number,
-            onValueChange = { viewModel.number = it },
-            placeholder = "Number",
-            keyboardType = KeyboardType.Phone,
-            borderColor = borderColor
-        )
-
-        CustomOutlinedField(
-            value = emailId,
-            onValueChange = { viewModel.email = it },
-            placeholder = "Email",
-            borderColor = borderColor
-        )
-
-        CustomOutlinedField(
-            value = password,
-            onValueChange = { viewModel.password = it },
-            placeholder = "password",
-            borderColor = borderColor
-        )
-
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OrangeButton("Continue >", onClick = {
-            navController.navigate("KidsLoginScreen")
-        })
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OrangeButton("Sign In", onClick = {
-            // TODO: Add logic
-        })
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedAuthButton(text = "Sign in with Google", icon = "G")
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedAuthButton(text = "Sign in with Apple ID", icon = "")
-    }
-}
-@Composable
-fun CustomOutlinedField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    borderColor: Color
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.LightGray) },
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        singleLine = true,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = borderColor,   // Orange border when focused
-            unfocusedIndicatorColor = borderColor, // Orange border when unfocused
-            cursorColor = Color.White,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(12.dp)
-    )
-}
-
-
-@Composable
-fun OrangeButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-    ) {
-        Text(text, color = Color.White, fontSize = 16.sp)
-    }
-}
-
-@Composable
-fun OutlinedAuthButton(text: String, icon: String) {
-    OutlinedButton(
-        onClick = { /* Placeholder */ },
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, Color(0xFFFF9800)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (errorMessage.isNotEmpty()) {
             Text(
-                icon,
-                color = Color.White,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(end = 8.dp)
+                text = errorMessage,
+                color = Color.Red,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-            Text(text, color = Color.White, fontSize = 14.sp)
+        }
+
+        Button(
+            onClick = {
+                if (email.value.isEmpty() || pass.value.isEmpty()) {
+                    errorMessage = "Please fill all fields"
+                } else if (!Patterns.EMAIL_ADDRESS.matcher(email.value).matches()) {
+                    errorMessage = "Invalid email format"
+                } else {
+                    isLoading = true
+                    errorMessage = ""
+                    viewModel.signIn(
+                        email.value,
+                        pass.value,
+                        { onLoginSuccess(navController)},
+                        { errorMessage = it}
+                    )
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = OrangeAccent),
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text(text = "Log In", color = Color.White, fontSize = 16.sp)
+            }
         }
     }
 }
 
-@Composable
-fun textFieldColors() = TextFieldDefaults.colors(
-    unfocusedContainerColor = Color.Transparent,
-    focusedContainerColor = Color.Transparent,
-    unfocusedIndicatorColor = Color.Transparent,
-    focusedIndicatorColor = Color.Transparent,
-    cursorColor = Color.White,
-    focusedTextColor = Color.White,
-    unfocusedTextColor = Color.White
-)
+fun onLoginSuccess(navController: NavHostController) {
+    navController.navigate(Screen.Home.route) {
+        popUpTo(Screen.Login.route) { inclusive = true }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
-fun MyComposablePreview() {
+fun LoginScreenPreview() {
     LoginScreen(navController = rememberNavController())
 }

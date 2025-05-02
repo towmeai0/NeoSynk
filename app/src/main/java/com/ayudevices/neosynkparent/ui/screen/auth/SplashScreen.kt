@@ -30,6 +30,7 @@ fun SplashScreen(
         modifier = Modifier
             .fillMaxSize()
     ) {
+
         // Background Image
         Image(
             painter = painterResource(id = R.drawable.doctorimg), // Replace with your image
@@ -103,7 +104,7 @@ fun SplashScreen(
 
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Login.route) {
+                            navController.navigate(Screen.OnboardingScreen.route) {
                                 popUpTo(Screen.SplashScreen.route) { inclusive = true }
                             }
                         },
