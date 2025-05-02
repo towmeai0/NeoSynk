@@ -2,12 +2,14 @@ package com.ayudevices.neosynkparent.data.network
 
 import android.content.Context
 import android.util.Log
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
 import com.ayudevices.neosynkparent.data.model.ChatRequest
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
-import com.ayudevices.neosynkparent.utils.UserIdManager
+import com.ayudevices.neosynkparent.data.repository.AuthRepository
+import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +20,8 @@ class TokenSender @Inject constructor(
     private val fcmApiService: FcmApiService,
     private val chatDao: ChatDao,
     private val chatApiService: ChatApiService,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val authRepository: AuthRepository
 ) {
     fun sendFcmTokenToServer(token: String) {
         val request = FcmTokenRequest(
@@ -61,8 +64,8 @@ class TokenSender @Inject constructor(
     fun fetchVitalsFromServer(responseKey: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val userId = UserIdManager.getUserId(context)
-                if (userId.isNullOrEmpty()) {
+                val userId = authRepository.getCurrentUserId().toString()
+                if (userId.isEmpty()) {
                     Log.e("Vitals", "User ID is null or empty.")
                     return@launch
                 }

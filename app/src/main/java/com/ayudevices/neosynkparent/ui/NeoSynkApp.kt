@@ -40,6 +40,8 @@ fun NeoSynkApp(
     // Determine if the BottomBar and TopBar should be shown based on the screen route
     val showTopAndBottomBar = currentDestination?.route !in listOf(
         Screen.Login.route,
+        Screen.OnboardingScreen.route,
+        Screen.Signup.route,
         Screen.SplashScreen.route,
         Screen.DiyaScreen.route,
         Screen.KidsLoginScreen.route

@@ -9,6 +9,8 @@ import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.screen.vitals.WeightDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.KidsLoginScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.LoginScreen
+import com.ayudevices.neosynkparent.ui.screen.auth.OnboardingScreen
+import com.ayudevices.neosynkparent.ui.screen.auth.SignupScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.SplashScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
 import com.ayudevices.neosynkparent.ui.screen.dashboard.DiyaScreen
@@ -32,8 +34,17 @@ fun NeoSynkNavHost(
         startDestination = Screen.SplashScreen.route,
         modifier = modifier
     ) {
+        composable(Screen.OnboardingScreen.route) {
+            OnboardingScreen(navController)
+        }
         composable(Screen.Login.route) {
-            LoginScreen(navController)
+            LoginScreen(navController = navController)
+        }
+        composable(Screen.Signup.route) {
+            SignupScreen(navController = navController)
+        }
+        composable(Screen.VitalTabScreen.route) {
+            VitalTabScreen(navController)
         }
         composable(Screen.Home.route) {
             HomeScreen(navController)

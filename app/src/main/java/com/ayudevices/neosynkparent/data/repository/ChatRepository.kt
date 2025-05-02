@@ -9,7 +9,6 @@ import com.ayudevices.neosynkparent.data.database.chatdatabase.PendingIntentEnti
 import com.ayudevices.neosynkparent.data.model.ChatRequest
 import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
-import com.ayudevices.neosynkparent.utils.UserIdManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 
@@ -20,10 +19,11 @@ class ChatRepository @Inject constructor(
     private val chatDao: ChatDao,
     private val apiService: ChatApiService,
     private val tokenSender: TokenSender,
-    private val pendingIntentDao: PendingIntentDao
+    private val pendingIntentDao: PendingIntentDao,
+    private val authRepository: AuthRepository
 ) {
     suspend fun sendMessage(message: String) {
-        val userId = UserIdManager.getUserId(context)
+        val userId = authRepository.getCurrentUserId().toString()
         Log.d("ChatRepository", userId)
         val userMsg = ChatEntity(message = message, sender = "user")
         chatDao.insertMessage(userMsg)
