@@ -68,7 +68,6 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
         }
-
         Button(
             onClick = {
                 if (email.value.isEmpty() || pass.value.isEmpty()) {
@@ -81,8 +80,14 @@ fun LoginScreen(
                     viewModel.signIn(
                         email.value,
                         pass.value,
-                        { onLoginSuccess(navController)},
-                        { errorMessage = it}
+                        {
+                            isLoading = false
+                            onLoginSuccess(navController)
+                        },
+                        { error ->
+                            isLoading = false
+                            errorMessage = error
+                        }
                     )
                 }
             },
@@ -99,6 +104,7 @@ fun LoginScreen(
                 Text(text = "Log In", color = Color.White, fontSize = 16.sp)
             }
         }
+
     }
 }
 
