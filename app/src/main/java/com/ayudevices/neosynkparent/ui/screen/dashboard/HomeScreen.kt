@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.screen.Tab
 import com.ayudevices.neosynkparent.ui.screen.tabs.MilestonesTab
 import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
@@ -27,6 +29,7 @@ import com.ayudevices.neosynkparent.ui.theme.darkBackground
 import com.ayudevices.neosynkparent.ui.theme.orange
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
 import com.ayudevices.neosynkparent.viewmodel.HomeViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +39,16 @@ fun HomeScreen(
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val selectedTab = viewModel.selectedTab.collectAsState()
+
+    LaunchedEffect(Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(Screen.Home.route) { inclusive = true }
+            }
+        }
+    }
+
 
     Log.d("UserId" ,
         "Email : ${authViewModel.getCurrentUser()?.email} \n," +

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,11 +22,24 @@ import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
 import com.ayudevices.neosynkparent.ui.theme.AppBackground
 import com.ayudevices.neosynkparent.ui.theme.CardBackground
 import com.ayudevices.neosynkparent.ui.theme.neoSynkLightGreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun SplashScreen(
     navController: NavHostController
 ) {
+    LaunchedEffect(Unit) {
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.SplashScreen.route) { inclusive = true }
+            }
+        } else {
+            navController.navigate(Screen.OnboardingScreen.route) {
+                popUpTo(Screen.SplashScreen.route) { inclusive = true }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()

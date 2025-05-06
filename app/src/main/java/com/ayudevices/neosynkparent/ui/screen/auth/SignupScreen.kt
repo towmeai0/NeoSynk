@@ -105,7 +105,7 @@ fun SignupScreen(
 
 fun onSignupSuccess(navController: NavHostController) {
     navController.navigate(Screen.Login.route) {
-        popUpTo(Screen.Signup.route) { inclusive = true }
+        popUpTo(0)
     }
 }
 
