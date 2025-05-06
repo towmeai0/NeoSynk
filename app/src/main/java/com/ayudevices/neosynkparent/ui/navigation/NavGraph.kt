@@ -16,8 +16,10 @@ import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
 import com.ayudevices.neosynkparent.ui.screen.dashboard.DiyaScreen
 import com.ayudevices.neosynkparent.ui.screen.dashboard.DocsScreen
 import com.ayudevices.neosynkparent.ui.screen.dashboard.HomeScreen
+import com.ayudevices.neosynkparent.ui.screen.dashboard.LiveFeedTab
 import com.ayudevices.neosynkparent.ui.screen.dashboard.MilestoneTab
 import com.ayudevices.neosynkparent.ui.screen.dashboard.UploadScreen
+import com.ayudevices.neosynkparent.ui.screen.tabs.LiveTab
 import com.ayudevices.neosynkparent.ui.screen.vitals.HeartRateDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.vitals.VitalsSPO2Screen
 import com.google.firebase.auth.FirebaseAuth
@@ -58,6 +60,9 @@ fun NeoSynkNavHost(
         }
         composable(Screen.VitalTabScreen.route) {
             VitalTabScreen(navController)
+        }
+        composable(Screen.LiveFeedTab.route) {
+            LiveTab(navController)
         }
         composable(Screen.MilestonesTab.route) {
             MilestoneTab(navController)

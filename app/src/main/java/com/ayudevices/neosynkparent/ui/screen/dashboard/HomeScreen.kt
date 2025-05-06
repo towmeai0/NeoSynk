@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.screen.Tab
+import com.ayudevices.neosynkparent.ui.screen.tabs.LiveTab
 import com.ayudevices.neosynkparent.ui.screen.tabs.MilestonesTab
 import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
 import com.ayudevices.neosynkparent.ui.theme.darkBackground
@@ -77,7 +78,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             when (selectedTab.value) {
-                Tab.LIVE_FEED -> LiveFeedTab()
+                Tab.LIVE_FEED -> LiveFeedTab(navController)
                 Tab.VITALS -> VitalsTab(navController)
                 Tab.MILESTONES -> MilestonesTab(navController)
             }
@@ -138,13 +139,8 @@ fun DynamicContent(selectedTab: Tab) {
 }
 
 @Composable
-fun LiveFeedTab() {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        // Live feed UI
-    }
+fun LiveFeedTab(navController: NavController) {
+    LiveTab(navController = navController)
 }
 
 @Composable

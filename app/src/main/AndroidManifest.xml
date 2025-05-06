@@ -6,6 +6,8 @@
     <!-- Required Permission to use Internet (FCM requires network access) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
 
 
     <!-- Permission for receiving push notifications -->
