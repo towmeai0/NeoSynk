@@ -20,11 +20,26 @@ import androidx.navigation.compose.rememberNavController
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.CardBackground
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun OnboardingScreen(
     navController: NavHostController
 ) {
+
+    LaunchedEffect(Unit) {
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.SplashScreen.route) { inclusive = true }
+            }
+        } else {
+            navController.navigate(Screen.OnboardingScreen.route) {
+                popUpTo(Screen.SplashScreen.route) { inclusive = true }
+            }
+        }
+    }
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()

@@ -24,6 +24,7 @@ import com.ayudevices.neosynkparent.ui.screen.dashboard.UploadScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.LiveTab
 import com.ayudevices.neosynkparent.ui.screen.vitals.HeartRateDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.vitals.VitalsSPO2Screen
+import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
@@ -31,9 +32,14 @@ fun NeoSynkNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val startDestination = if (FirebaseAuth.getInstance().currentUser != null) {
+        Screen.Home.route
+    } else {
+        Screen.SplashScreen.route
+    }
     NavHost(
         navController = navController,
-        startDestination = Screen.SplashScreen.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         composable(Screen.OnboardingScreen.route) {
