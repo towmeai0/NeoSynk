@@ -38,7 +38,7 @@ fun OnboardingScreen(
             Box(
                 modifier = Modifier.height(320.dp)
                     .width(363.dp)
-                    .padding(start = 24.dp, end = 24.dp)
+                    .padding(start = 20.dp, end = 20.dp)
             ){
                 Text(
                     buildAnnotatedString {

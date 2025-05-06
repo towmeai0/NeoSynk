@@ -30,6 +30,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+
     fun signIn(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         authState = AuthState.Authenticating
         authRepository.signIn(email, password) { success, error ->

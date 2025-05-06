@@ -16,14 +16,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ayudevices.neosynkparent.viewmodel.ProfileViewModel
+
 
 @Composable
-fun KidsLoginScreen(navController: NavController) {
-    var name by remember { mutableStateOf("") }
-    var Loc by remember { mutableStateOf("") }
-    var gender by remember { mutableStateOf("") }
+fun ProfileScreen(
+    viewModel: ProfileViewModel = hiltViewModel(),
+    navController: NavController
+) {
+    val name = viewModel.name
+    val Loc = viewModel.Loc
+    val gender = viewModel.gender
 
     Box(
         modifier = Modifier
@@ -39,7 +45,6 @@ fun KidsLoginScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Top Title
             Text(
                 text = "Profile",
                 fontSize = 20.sp,
@@ -48,7 +53,6 @@ fun KidsLoginScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Profile Picture Placeholder
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -66,7 +70,6 @@ fun KidsLoginScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Upload text
             Text(
                 text = "Upload Profile Picture",
                 color = Color.White.copy(alpha = 0.8f),
@@ -76,18 +79,29 @@ fun KidsLoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
 
             // Input Fields
-            ProfileInputField(hint = "Name", value = name, onValueChange = { name = it })
+            ParentProfileInputField(
+                hint = "Name",
+                value = name,
+                onValueChange = { viewModel.name = it }
+            )
             Spacer(modifier = Modifier.height(12.dp))
-            ProfileInputField(hint = "Location", value = Loc, onValueChange = { Loc= it })
+            ParentProfileInputField(
+                hint = "Location",
+                value = Loc,
+                onValueChange = { viewModel.Loc = it }
+            )
             Spacer(modifier = Modifier.height(12.dp))
-            ProfileInputField(hint = "Gender", value = gender, onValueChange = { gender = it })
+            ParentProfileInputField(
+                hint = "Gender",
+                value = gender,
+                onValueChange = { viewModel.gender = it }
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Continue Button
             Button(
                 onClick = {
-                    navController.navigate("home") // Use proper route when integrated with the NavGraph
+                    navController.navigate("home")
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(24.dp),
@@ -102,7 +116,7 @@ fun KidsLoginScreen(navController: NavController) {
 }
 
 @Composable
-fun ProfileInputField(hint: String, value: String, onValueChange: (String) -> Unit) {
+fun ParentProfileInputField(hint: String, value: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -127,3 +141,9 @@ fun ProfileInputField(hint: String, value: String, onValueChange: (String) -> Un
 }
 
 
+
+@Preview(showBackground = true)
+@Composable
+fun ScreenPreview() {
+    ProfileScreen(navController = rememberNavController())
+}

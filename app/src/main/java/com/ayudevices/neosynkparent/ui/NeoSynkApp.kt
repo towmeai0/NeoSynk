@@ -28,6 +28,13 @@ import com.ayudevices.neosynkparent.ui.navigation.NeoSynkNavHost
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.darkBackground
 import com.ayudevices.neosynkparent.ui.theme.orange
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+
+import androidx.compose.ui.draw.clip
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +51,8 @@ fun NeoSynkApp(
         Screen.Signup.route,
         Screen.SplashScreen.route,
         Screen.DiyaScreen.route,
-        Screen.KidsLoginScreen.route
+        Screen.KidsLoginScreen.route,
+        Screen.Profile.route
     )
 
     Scaffold(
@@ -64,7 +72,8 @@ fun NeoSynkApp(
                         IconButton(onClick = { /* Notifications action */ }) {
                             Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color.White)
                         }
-                        IconButton(onClick = { /* Person icon action */ }) {
+                        IconButton(onClick = {  navController.navigate(Screen.Profileshow.route)
+                        }) {
                             Icon(Icons.Default.Person, contentDescription = "Person", tint = Color.White)
                         }
                     },
@@ -94,6 +103,7 @@ fun NeoSynkApp(
     }
 }
 
+
 @Composable
 fun BottomNavigationBar(
     currentDestination: NavDestination?,
@@ -106,32 +116,54 @@ fun BottomNavigationBar(
         Icons.Filled.Description,
         Icons.Filled.Monitor
     )
+    val orange = Color(0xFFFF9800)
 
-    NavigationBar(containerColor = Color(0xFF1E1E1E)) {
-        items.forEachIndexed { index, screen ->
-            val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 6.dp, vertical = 10.dp)
+            .clip(RoundedCornerShape(percent = 90))
+            .background(Color(0xFF1E1E1E))
+            .border(width = 2.dp, color = orange, shape = RoundedCornerShape(percent = 90))
+    )
+    {
+        NavigationBar(
+            containerColor = Color.Transparent,
+            tonalElevation = 0.dp,
+            modifier = Modifier
+                .clip(RoundedCornerShape(percent = 50))
+                .background(Color.Transparent)
+        ) {
+            items.forEachIndexed { index, screen ->
+                val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
 
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = { onItemSelected(screen) },
-                icon = {
-                    if (screen.route == Screen.DiyaScreen.route) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.diya_icon),
-                            contentDescription = screen.route,
-                            modifier = Modifier.size(34.dp),
-                            tint = Color.Unspecified
-                        )
-                    } else {
-                        // Use default icons for other screens
-                        Icon(
-                            icons[index],
-                            contentDescription = screen.route,
-                            tint = if (isSelected) orange else Color.White
-                        )
-                    }
-                }
-            )
+                NavigationBarItem(
+                    selected = isSelected,
+                    onClick = { onItemSelected(screen) },
+                    icon = {
+                        if (screen.route == Screen.DiyaScreen.route) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.diya_icon),
+                                contentDescription = screen.route,
+                                modifier = Modifier.size(34.dp),
+                                tint = Color.Unspecified
+                            )
+                        } else {
+                            Icon(
+                                imageVector = icons[index],
+                                contentDescription = screen.route,
+                                tint = if (isSelected) orange else Color.White
+                            )
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = orange,
+                        unselectedIconColor = Color.White
+                    )
+                )
+            }
         }
     }
 }
+

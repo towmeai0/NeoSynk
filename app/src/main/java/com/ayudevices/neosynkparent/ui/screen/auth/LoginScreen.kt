@@ -47,12 +47,12 @@ fun LoginScreen(
             fontSize = 75.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .padding(bottom = 113.dp, start = 27.dp, end = 27.dp)
+                .padding(bottom = 100.dp, start = 27.dp, end = 27.dp, top = 27.dp)
         )
 
         Column(
             modifier = Modifier
-                .padding(bottom = 287.dp, start = 16.dp, end = 16.dp)
+                .padding(bottom = 20.dp, start = 16.dp, end = 16.dp)
                 .fillMaxWidth()
         ) {
             StyledTextField(value = email.value, onValueChange = { email.value = it }, label = "Email id or Mobile Number")
@@ -109,7 +109,7 @@ fun LoginScreen(
 }
 
 fun onLoginSuccess(navController: NavHostController) {
-    navController.navigate(Screen.Home.route) {
+    navController.navigate(Screen.Profile.route) {
         popUpTo(Screen.Login.route) { inclusive = true }
     }
 }

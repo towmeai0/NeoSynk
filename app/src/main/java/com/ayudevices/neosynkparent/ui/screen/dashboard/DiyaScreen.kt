@@ -5,8 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.speech.tts.TextToSpeech
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -16,32 +19,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.*
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
 import com.ayudevices.neosynkparent.viewmodel.ChatViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
-import kotlin.math.sin
+import java.util.*
 import kotlin.math.PI
-import android.content.pm.PackageManager
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.core.content.ContextCompat
-import androidx.compose.ui.platform.LocalContext
-
-
-
+import kotlin.math.sin
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,8 +51,18 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
     var userInput by remember { mutableStateOf(TextFieldValue("")) }
     var isListening by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(false) }
+    var isBotTyping by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val voiceLevel = remember { Animatable(0.5f) }
+
+    // Text-to-Speech initialization
+    val tts = remember {
+        TextToSpeech(context, null)
+    }
+
+    LaunchedEffect(Unit) {
+        tts.language = Locale.US
+    }
 
     val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
     val recognizerIntent = remember {
@@ -71,7 +81,8 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             }
         }
     )
-    // Check for microphone permission and start listening only when the orb is visible
+
+    // Start listening when screen loads
     LaunchedEffect(Unit) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             if (!showKeyboard) startListening(speechRecognizer, recognizerIntent)
@@ -79,13 +90,25 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             launcher.launch(Manifest.permission.RECORD_AUDIO)
         }
 
-
         scope.launch {
-            while (isListening) {
+            while (true) {
                 val newLevel = Random.nextFloat() * 0.7f + 0.3f
                 voiceLevel.animateTo(newLevel, animationSpec = tween(300))
                 delay(300)
             }
+        }
+    }
+
+    LaunchedEffect(messages, showKeyboard) {
+        if (!showKeyboard) {
+            messages.lastOrNull()?.let { message ->
+                if (message.sender != "user") {
+                    isBotTyping = false  // Bot has replied
+                    tts.speak(message.message, TextToSpeech.QUEUE_FLUSH, null, null)
+                }
+            }
+        } else {
+            tts.stop()
         }
     }
 
@@ -94,14 +117,12 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 matches?.firstOrNull()?.let { spokenText ->
+                    isBotTyping = true
                     viewModel.onSendMessage(spokenText)
                 }
-                // Automatically start listening again if voice orb is visible
                 if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
             }
-
             override fun onError(error: Int) {
-                // Retry automatically on error, check if orb is visible
                 if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
             }
 
@@ -114,9 +135,9 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             override fun onEvent(eventType: Int, params: Bundle?) {}
         }
         speechRecognizer.setRecognitionListener(listener)
-
         onDispose {
             speechRecognizer.destroy()
+            tts.shutdown()
         }
     }
 
@@ -133,7 +154,14 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                 }
             },
             actions = {
-                Button(onClick = { showKeyboard = !showKeyboard }) {
+                Button(onClick = {
+                    showKeyboard = !showKeyboard
+                    if (showKeyboard) {
+                        speechRecognizer.stopListening()  // Pause voice input when keyboard opens
+                    } else {
+                        speechRecognizer.startListening(recognizerIntent)  // Resume voice input
+                    }
+                }) {
                     Text("Keyboard", color = Color.White)
                 }
             },
@@ -156,18 +184,45 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                         .padding(4.dp),
                     horizontalArrangement = if (message.sender == "user") Arrangement.End else Arrangement.Start
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = if (message.sender == "user") Color(0xFF4CAF50) else Color.DarkGray,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(12.dp)
-                            .widthIn(max = 280.dp)
-                    ) {
-                        Text(text = message.message, color = Color.White)
+                    if (message.sender != "user") {
+                        var visible by remember { mutableStateOf(false) }
+
+                        LaunchedEffect(Unit) {
+                            visible = true
+                        }
+
+                        AnimatedVisibility(visible = visible) {
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.DarkGray, shape = RoundedCornerShape(12.dp))
+                                    .padding(12.dp)
+                                    .widthIn(max = 280.dp)
+                            ) {
+                                Text(text = message.message, color = Color.White)
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF4CAF50), shape = RoundedCornerShape(12.dp))
+                                .padding(12.dp)
+                                .widthIn(max = 280.dp)
+                        ) {
+                            Text(text = message.message, color = Color.White)
+                        }
                     }
                 }
+            }
+        }
+
+        if (isBotTyping) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                BabyTypingAnimation()
             }
         }
 
@@ -196,131 +251,79 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             ) {
                 TextField(
                     value = userInput,
-                    onValueChange = {
-                        userInput = it
-                        if (it.text.isNotEmpty()) {
-                            isListening = true
-                        }
-                    },
+                    onValueChange = { userInput = it },
                     placeholder = { Text("Type a message...") },
+                    modifier = Modifier.weight(1f),
                     colors = TextFieldDefaults.colors(
                         unfocusedContainerColor = Color.Transparent,
                         focusedContainerColor = Color.Transparent,
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White
-                    ),
-                    modifier = Modifier.weight(1f),
-                    maxLines = 2
+                    )
                 )
-
                 IconButton(onClick = {
-                    val text = userInput.text.trim()
-                    if (text.isNotEmpty()) {
-                        viewModel.onSendMessage(text)
+                    if (userInput.text.isNotBlank()) {
+                        isBotTyping = true
+                        viewModel.onSendMessage(userInput.text)
                         userInput = TextFieldValue("")
-
-                        // Stop listening when keyboard is visible
-                        isListening = false
+                        speechRecognizer.startListening(recognizerIntent)
                     }
                 }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send",
-                        tint = Color.White
-                    )
-                }
-            }
-        }
-
-        if (messages.isNotEmpty() && messages.last().message.contains("Enter Yes or No") && showKeyboard) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.onSendMessage("yes")
-                    },
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Text("Yes")
-                }
-                Button(
-                    onClick = {
-                        viewModel.onSendMessage("no")
-                    }
-                ) {
-                    Text("No")
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
                 }
             }
         }
     }
 }
 
-fun startListening(speechRecognizer: SpeechRecognizer, recognizerIntent: Intent) {
-    speechRecognizer.startListening(recognizerIntent)
+fun startListening(speechRecognizer: SpeechRecognizer, intent: Intent) {
+    speechRecognizer.startListening(intent)
 }
 
 @Composable
-fun VoiceOrb(
-    modifier: Modifier = Modifier,
-    voiceLevel: Float = 0.5f
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "wave_shift")
-    val waveShift by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing)
-        ),
-        label = "wave_shift"
-    )
-
+fun VoiceOrb(modifier: Modifier = Modifier, voiceLevel: Float) {
     Canvas(modifier = modifier) {
-        val center = size.center
         val radius = size.minDimension / 2
-
+        val center = Offset(size.width / 2, size.height / 2)
         drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(Color.Cyan.copy(alpha = 0.5f), Color.Transparent),
-                center = center,
-                radius = radius * 3.0f
-            ),
-            radius = radius * 3.0f,
-            center = center
+            color = Color(0xFF00BCD4),
+            center = center,
+            radius = radius * voiceLevel,
+            style = Stroke(width = 4.dp.toPx())
         )
-
         drawCircle(
-            color = Color(0xFF1E1E2F),
-            radius = radius * 1.5f,
-            center = center
-        )
-
-        val path = Path()
-        val waveHeight = radius * 0.4f * voiceLevel
-        val pointCount = 100
-
-        for (i in 0..pointCount) {
-            val x = i / pointCount.toFloat() * size.width
-            val angle = (i / pointCount.toFloat()) * 4 * PI + waveShift
-            val y = center.y + (sin(angle) * waveHeight).toFloat()
-
-            if (i == 0) {
-                path.moveTo(x, y)
-            } else {
-                path.lineTo(x, y)
-            }
-        }
-
-        drawPath(
-            path = path,
-            brush = Brush.horizontalGradient(
-                colors = listOf(Color.Cyan, Color.Magenta, Color.Blue)
-            ),
-            style = Stroke(width = 4f)
+            color = Color(0xFF00BCD4).copy(alpha = 0.3f),
+            center = center,
+            radius = radius * (1 + 0.2f * sin(PI * voiceLevel).toFloat())
         )
     }
 }
+
+@Composable
+fun BabyTypingAnimation() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val offsetY by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .offset(y = offsetY.dp)
+            .size(40.dp)
+        .background(Color(0xFFFFC107), shape = RoundedCornerShape(50))
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = "Diya is typing...",
+        color = Color.White,
+        style = MaterialTheme.typography.bodySmall
+    )
+}
+
+

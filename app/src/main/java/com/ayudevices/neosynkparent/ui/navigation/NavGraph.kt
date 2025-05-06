@@ -10,6 +10,8 @@ import com.ayudevices.neosynkparent.ui.screen.vitals.WeightDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.KidsLoginScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.LoginScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.OnboardingScreen
+import com.ayudevices.neosynkparent.ui.screen.auth.ProfileDisplay
+import com.ayudevices.neosynkparent.ui.screen.auth.ProfileScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.SignupScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.SplashScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
@@ -42,6 +44,12 @@ fun NeoSynkNavHost(
         }
         composable(Screen.Signup.route) {
             SignupScreen(navController = navController)
+        }
+        composable(Screen.Profile.route) {
+            ProfileScreen(navController = navController)
+        }
+        composable(Screen.Profileshow.route) {
+            ProfileDisplay(navController = navController)
         }
         composable(Screen.VitalTabScreen.route) {
             VitalTabScreen(navController)

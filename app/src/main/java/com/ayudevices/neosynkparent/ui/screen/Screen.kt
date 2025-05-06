@@ -5,6 +5,8 @@ sealed class Screen(val route: String) {
     object DiyaScreen : Screen("ChatScreen")
     object Home : Screen("home")
     object Login : Screen("login")
+    object Profile : Screen("profile")
+    object Profileshow : Screen("profiler")
     object Signup : Screen("signup")
     object OnboardingScreen :Screen ("Onboarding")
     object VitalTabScreen : Screen("vitals")

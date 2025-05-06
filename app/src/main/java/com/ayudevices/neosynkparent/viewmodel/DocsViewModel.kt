@@ -66,21 +66,25 @@ class DocsViewModel @Inject constructor(
         viewModelScope.launch {
             chatDao.getAllMessages().collectLatest { messages ->
                 messages.forEach { message ->
+                    val msg = message.message.lowercase() // To ensure case-insensitive matching
                     when {
-                        message.message.contains("weight") -> {
-                            weight = extractValue(message.message, "weight")
+                        msg.contains("weight") -> {
+                            weight = extractValue(msg, "weight")
                             latestIntent = "weight_vital_request"
                         }
-                        message.message.contains("height") -> {
-                            height = extractValue(message.message, "height")
+
+                        msg.contains("height") -> {
+                            height = extractValue(msg, "height")
                             latestIntent = "height_vital_request"
                         }
-                        message.message.contains("heart_rate") -> {
-                            heartRate = extractValue(message.message, "heart_rate")
+
+                        msg.contains("heart rate") || msg.contains("heart_rate") -> {
+                            heartRate = extractValue(msg, "heart_rate")
                             latestIntent = "heart_rate_vital_request"
                         }
-                        message.message.contains("spo2") -> {
-                            spo2 = extractValue(message.message, "spo2")
+
+                        msg.contains("spo2") -> {
+                            spo2 = extractValue(msg, "spo2")
                             latestIntent = "spo2_vital_request"
                         }
                     }
@@ -90,9 +94,9 @@ class DocsViewModel @Inject constructor(
     }
 
     private fun extractValue(message: String, type: String): String {
-        val regex = Regex("$type\\s*:\\s*([\\d.]+)")
-        val matchResult = regex.find(message)
-        return matchResult?.groups?.get(1)?.value ?: "Fetching...."
+        val cleanType = type.replace("_", " ")
+        val pattern = Regex("""\b$cleanType\b\s*[:=]?\s*([0-9.]+)""", RegexOption.IGNORE_CASE)
+        val match = pattern.find(message)
+        return match?.groups?.get(1)?.value ?: "Fetching...."
     }
-
 }
