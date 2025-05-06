@@ -28,18 +28,6 @@ import com.google.firebase.auth.FirebaseAuth
 fun SplashScreen(
     navController: NavHostController
 ) {
-    LaunchedEffect(Unit) {
-        if (FirebaseAuth.getInstance().currentUser != null) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.SplashScreen.route) { inclusive = true }
-            }
-        } else {
-            navController.navigate(Screen.OnboardingScreen.route) {
-                popUpTo(Screen.SplashScreen.route) { inclusive = true }
-            }
-        }
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()

@@ -121,16 +121,16 @@ fun BottomNavigationBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 6.dp, vertical = 10.dp)
+            .padding(horizontal = 12.dp, vertical = 12.dp)
             .clip(RoundedCornerShape(percent = 90))
             .background(Color(0xFF1E1E1E))
             .border(width = 2.dp, color = orange, shape = RoundedCornerShape(percent = 90))
-    )
-    {
+    ) {
         NavigationBar(
             containerColor = Color.Transparent,
             tonalElevation = 0.dp,
             modifier = Modifier
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(percent = 50))
                 .background(Color.Transparent)
         ) {
@@ -145,7 +145,7 @@ fun BottomNavigationBar(
                             Icon(
                                 painter = painterResource(id = R.drawable.diya_icon),
                                 contentDescription = screen.route,
-                                modifier = Modifier.size(34.dp),
+                                modifier = Modifier.size(30.dp),
                                 tint = Color.Unspecified
                             )
                         } else {
@@ -166,4 +166,3 @@ fun BottomNavigationBar(
         }
     }
 }
-
