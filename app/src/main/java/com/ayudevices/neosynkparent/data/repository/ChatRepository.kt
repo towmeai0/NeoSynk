@@ -34,7 +34,7 @@ class ChatRepository @Inject constructor(
                 when (message.lowercase()) {
                     "yes" -> {
                         tokenSender.requestVitals(
-                            parentId = "parent_001",
+                            parentId = userId,
                             childId = "child_001",
                             reqVitals = listOf(pendingIntent.vitalType ?: return)
                         )

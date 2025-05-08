@@ -1,128 +1,143 @@
 package com.ayudevices.neosynkparent.ui.screen.tabs
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.hardware.Camera
-import android.os.Bundle
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.ayudevices.neosynkparent.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import com.ayudevices.neosynkparent.viewmodel.CustomSurfaceViewRenderer
+import com.ayudevices.neosynkparent.viewmodel.WebRTCManager
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+
+private const val TAG = "LiveFeedTab"
+
 
 @Composable
 fun LiveTab(navController: NavController) {
-    var isCameraOn by remember { mutableStateOf(false) }
-    var mCamera: Camera? by remember { mutableStateOf(null) }
     val context = LocalContext.current
+    val auth = Firebase.auth
+    val user = auth.currentUser
+    val database = Firebase.database
 
-    // Button to toggle the camera
+    var isViewing by remember { mutableStateOf(false) }
+    var connectionStatus by remember { mutableStateOf("Disconnected") }
+    var webRtcManager by remember { mutableStateOf<WebRTCManager?>(null) }
+
+    // Handle cleanup when composable leaves composition
+    DisposableEffect(isViewing) {
+        onDispose {
+            if (!isViewing) {
+                webRtcManager?.cleanup()
+                database.getReference("requests").child(user?.uid ?: "").removeValue()
+            }
+        }
+    }
+
+    if (user == null) {
+        Text("Please log in to view live feed")
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Connection controls
         Button(
             onClick = {
-                if (!isCameraOn) {
-                    // Check camera permission
-                    if (ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.CAMERA
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        ActivityCompat.requestPermissions(
-                            context as ComponentActivity,
-                            arrayOf(Manifest.permission.CAMERA),
-                            101
+                isViewing = !isViewing
+                if (isViewing) {
+                    connectionStatus = "Connecting..."
+                    database.getReference("requests").child(user.uid).setValue(true)
+
+                    // Initialize WebRTC if not already done
+                    if (webRtcManager == null) {
+                        webRtcManager = WebRTCManager(
+                            context = context,
+                            firebaseRef = database.reference,
+                            userId = user.uid,
+                            isCaller = false // Parent app is the receiver
                         )
-                    } else {
-                        // Start Camera
-                        startCamera(mCamera)
-                        isCameraOn = true
                     }
                 } else {
-                    // Stop camera feed
-                    stopCamera(mCamera)
-                    isCameraOn = false
+                    connectionStatus = "Disconnected"
+                    database.getReference("requests").child(user.uid).setValue(false)
+                    webRtcManager?.cleanup()
                 }
             }
         ) {
-            Text(text = if (isCameraOn) "Stop Camera" else "Start Camera")
+            Text(if (isViewing) "Stop Viewing" else "Start Viewing")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Connection status indicator
+        Text(
+            text = connectionStatus,
+            color = when (connectionStatus) {
+                "Connected" -> Color.Green
+                "Connecting..." -> Color.Yellow
+                else -> Color.Red
+            }
+        )
 
-        // Show live feed frame
+        // Video preview area
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
-            contentAlignment = Alignment.Center
+                .aspectRatio(9f / 16f)
+                .border(2.dp, Color.Gray)
         ) {
-            if (isCameraOn) {
-                SurfaceView(context).apply {
-                    val surfaceHolder = holder
-                    surfaceHolder.addCallback(object : SurfaceHolder.Callback {
-                        override fun surfaceCreated(p0: SurfaceHolder) {
-                            try {
-                                mCamera = Camera.open()
-                                mCamera?.setPreviewDisplay(holder)
-                                mCamera?.startPreview()
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                Toast.makeText(context, "Error opening camera", Toast.LENGTH_SHORT).show()
-                            }
+            if (isViewing) {
+                AndroidView(
+                    factory = { ctx ->
+                        CustomSurfaceViewRenderer(ctx).apply {
+                            webRtcManager?.setupRemoteRenderer(this)
                         }
-
-                        override fun surfaceChanged(
-                            p0: SurfaceHolder,
-                            height: Int,
-                            p2: Int,
-                            p3: Int
-                        ) {}
-
-                        override fun surfaceDestroyed(p0: SurfaceHolder) {
-                            stopCamera(mCamera)
-                        }
-                    })
-                }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    update = { renderer ->
+                        // Reattach renderer if needed
+                        webRtcManager?.videoTrack?.removeSink(renderer)
+                        webRtcManager?.videoTrack?.addSink(renderer)
+                    }
+                )
+            } else {
+                Text("Feed Inactive", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
-}
 
-// Function to start the camera
-fun startCamera(mCamera: Camera?) {
-    mCamera?.apply {
-        startPreview()
+    // Listen for connection status changes
+    LaunchedEffect(user.uid) {
+        database.getReference("status").child(user.uid)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.getValue(String::class.java)?.let { status ->
+                        connectionStatus = status
+                        if (status == "Connected") {
+                            // Handle successful connection
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    connectionStatus = "Error: ${error.message}"
+                }
+            })
     }
-}
-
-// Function to stop the camera
-fun stopCamera(mCamera: Camera?) {
-    mCamera?.apply {
-        stopPreview()
-        release()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewLiveTab() {
-    LiveTab(navController = rememberNavController()) // Preview with a dummy NavController
 }

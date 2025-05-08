@@ -9,8 +9,8 @@ import android.speech.tts.TextToSpeech
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -51,7 +51,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
     var userInput by remember { mutableStateOf(TextFieldValue("")) }
     var isListening by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(false) }
-    var isBotTyping by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val voiceLevel = remember { Animatable(0.5f) }
 
@@ -103,7 +102,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
         if (!showKeyboard) {
             messages.lastOrNull()?.let { message ->
                 if (message.sender != "user") {
-                    isBotTyping = false  // Bot has replied
                     tts.speak(message.message, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             }
@@ -117,7 +115,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 matches?.firstOrNull()?.let { spokenText ->
-                    isBotTyping = true
                     viewModel.onSendMessage(spokenText)
                 }
                 if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
@@ -184,45 +181,18 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                         .padding(4.dp),
                     horizontalArrangement = if (message.sender == "user") Arrangement.End else Arrangement.Start
                 ) {
-                    if (message.sender != "user") {
-                        var visible by remember { mutableStateOf(false) }
-
-                        LaunchedEffect(Unit) {
-                            visible = true
-                        }
-
-                        AnimatedVisibility(visible = visible) {
-                            Box(
-                                modifier = Modifier
-                                    .background(Color.DarkGray, shape = RoundedCornerShape(12.dp))
-                                    .padding(12.dp)
-                                    .widthIn(max = 280.dp)
-                            ) {
-                                Text(text = message.message, color = Color.White)
-                            }
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .background(Color(0xFF4CAF50), shape = RoundedCornerShape(12.dp))
-                                .padding(12.dp)
-                                .widthIn(max = 280.dp)
-                        ) {
-                            Text(text = message.message, color = Color.White)
-                        }
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = if (message.sender == "user") Color(0xFF4CAF50) else Color.DarkGray,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(12.dp)
+                            .widthIn(max = 280.dp)
+                    ) {
+                        Text(text = message.message, color = Color.White)
                     }
                 }
-            }
-        }
-
-        if (isBotTyping) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BabyTypingAnimation()
             }
         }
 
@@ -264,9 +234,10 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                 )
                 IconButton(onClick = {
                     if (userInput.text.isNotBlank()) {
-                        isBotTyping = true
                         viewModel.onSendMessage(userInput.text)
                         userInput = TextFieldValue("")
+
+                        // Restart listening after sending a message
                         speechRecognizer.startListening(recognizerIntent)
                     }
                 }) {
@@ -299,31 +270,3 @@ fun VoiceOrb(modifier: Modifier = Modifier, voiceLevel: Float) {
         )
     }
 }
-
-@Composable
-fun BabyTypingAnimation() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val offsetY by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 10f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    Box(
-        modifier = Modifier
-            .offset(y = offsetY.dp)
-            .size(40.dp)
-        .background(Color(0xFFFFC107), shape = RoundedCornerShape(50))
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        text = "Diya is typing...",
-        color = Color.White,
-        style = MaterialTheme.typography.bodySmall
-    )
-}
-
-
