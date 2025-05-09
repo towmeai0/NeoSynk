@@ -1,23 +1,24 @@
 package com.ayudevices.neosynkparent.viewmodel
 
 import android.content.Context
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
+import org.webrtc.VideoTrack
 
 @HiltViewModel
 class LiveFeedViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val remoteUserId: String
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val remoteUserId: String = savedStateHandle["remoteUserId"] ?: ""
 
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
@@ -95,7 +96,6 @@ class LiveFeedViewModel @Inject constructor(
     fun setRemoteRenderer(renderer: CustomSurfaceViewRenderer) {
         webRtcManager?.setRemoteRenderer(renderer)
     }
-
 
     override fun onCleared() {
         super.onCleared()

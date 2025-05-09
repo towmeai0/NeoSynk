@@ -13,6 +13,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.firebase.database.*
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.viewmodel.CustomSurfaceViewRenderer
 import com.ayudevices.neosynkparent.viewmodel.LiveFeedViewModel
 import com.ayudevices.neosynkparent.viewmodel.WebRTCManager
@@ -24,8 +25,9 @@ private const val TAG = "LiveFeedTab"
 
 @Composable
 fun LiveTab(
-    remoteUserId: String,
+    navController: NavController,
     viewModel: LiveFeedViewModel = hiltViewModel()
+
 ) {
     val isViewing by viewModel.isViewing.collectAsState()
     val connectionStatus by viewModel.connectionStatus.collectAsState()
@@ -68,12 +70,7 @@ fun LiveTab(
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
-                    update = { renderer ->
-                        viewModel.getVideoTrack()?.let { videoTrack ->
-                            videoTrack.removeSink(renderer)
-                            videoTrack.addSink(renderer)
-                        }
-                    }
+
                 )
             } else {
                 Text("Feed Inactive", modifier = Modifier.align(Alignment.Center))
