@@ -90,6 +90,7 @@ dependencies {
 
     implementation ("io.github.webrtc-sdk:android:125.6422.06.1")
 
+
     // CameraX dependencies
     implementation (libs.androidx.camera.core)
     implementation (libs.androidx.camera.camera2)

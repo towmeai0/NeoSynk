@@ -15,6 +15,7 @@ class NeoSynkApplication: Application(
     @Inject lateinit var tokenSender: TokenSender
     override fun onCreate() {
         super.onCreate()
+
         FirebaseApp.initializeApp(this)
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
