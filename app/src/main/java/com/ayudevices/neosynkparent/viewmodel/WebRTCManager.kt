@@ -10,305 +10,181 @@ import java.util.concurrent.Executors
 
 class WebRTCManager(
     private val context: Context,
-    private val firebaseRef: DatabaseReference,
-    private val userId: String,
-    private val isCaller: Boolean = false
+    private val signalingRef: DatabaseReference,
+    private val localUserId: String,
+    private val remoteUserId: String
 ) {
     private val executor = Executors.newSingleThreadExecutor()
-    private val TAG = "WebRTCManager"
+    private lateinit var peerConnectionFactory: PeerConnectionFactory
+    private lateinit var peerConnection: PeerConnection
+    private var remoteRenderer: SurfaceViewRenderer? = null
 
-    // WebRTC components
-    private var peerConnectionFactory: PeerConnectionFactory? = null
-    private var peerConnection: PeerConnection? = null
-    internal var eglBase: EglBase? = null
-    internal var videoTrack: VideoTrack? = null
-
-    // ICE servers configuration
-    private val iceServers = listOf(
-        PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-    )
-
-    // PeerConnection observer
-    private val peerConnectionObserver = object : PeerConnection.Observer {
-        override fun onIceCandidate(candidate: IceCandidate) {
-            Log.d(TAG, "onIceCandidate: ${candidate.sdpMid}")
-            sendIceCandidate(candidate)
-        }
-
-        override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
-            Log.d(TAG, "onIceConnectionChange: $state")
-        }
-
-        override fun onConnectionChange(newState: PeerConnection.PeerConnectionState) {
-            Log.d(TAG, "onConnectionChange: $newState")
-        }
-
-        override fun onAddStream(stream: MediaStream) {
-            Log.d(TAG, "onAddStream: ${stream.id}")
-            videoTrack = stream.videoTracks.firstOrNull()
-        }
-
-        // Other required overrides
-        override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {}
-        override fun onDataChannel(channel: DataChannel) {}
-        override fun onIceConnectionReceivingChange(receiving: Boolean) {}
-        override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
-        override fun onAddTrack(receiver: RtpReceiver?, streams: Array<MediaStream>?) {}
-        override fun onRemoveStream(stream: MediaStream?) {}
-        override fun onRenegotiationNeeded() {}
-        override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
-    }
+    private var eglBase: EglBase = EglBase.create()
 
     init {
-        initializePeerConnectionFactory()
+        executor.execute {
+            initializePeerConnectionFactory()
+            initializePeerConnection()
+            listenForOffer()
+            listenForIceCandidates()
+        }
     }
 
     private fun initializePeerConnectionFactory() {
-        executor.execute {
-            try {
-                PeerConnectionFactory.initialize(
-                    PeerConnectionFactory.InitializationOptions.builder(context)
-                        .setEnableInternalTracer(true)
-                        .createInitializationOptions()
-                )
+        val initializationOptions = PeerConnectionFactory.InitializationOptions.builder(context)
+            .createInitializationOptions()
+        PeerConnectionFactory.initialize(initializationOptions)
 
-                eglBase = EglBase.create()
+        val options = PeerConnectionFactory.Options()
+        val encoderFactory = DefaultVideoEncoderFactory(eglBase.eglBaseContext, true, true)
+        val decoderFactory = DefaultVideoDecoderFactory(eglBase.eglBaseContext)
 
-                val options = PeerConnectionFactory.Options()
-                peerConnectionFactory = PeerConnectionFactory.builder()
-                    .setOptions(options)
-                    .setVideoDecoderFactory(DefaultVideoDecoderFactory(eglBase!!.eglBaseContext))
-                    .setVideoEncoderFactory(DefaultVideoEncoderFactory(
-                        eglBase!!.eglBaseContext,
-                        true, true
-                    ))
-                    .createPeerConnectionFactory()
-
-                Log.d(TAG, "PeerConnectionFactory initialized")
-            } catch (e: Exception) {
-                Log.e(TAG, "initializePeerConnectionFactory error", e)
-            }
-        }
+        peerConnectionFactory = PeerConnectionFactory.builder()
+            .setOptions(options)
+            .setVideoEncoderFactory(encoderFactory)
+            .setVideoDecoderFactory(decoderFactory)
+            .createPeerConnectionFactory()
     }
 
-    fun initializePeerConnection(renderer: SurfaceViewRenderer) {
-        executor.execute {
-            try {
-                val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-                    sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-                    continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
-                }
+    private fun initializePeerConnection() {
+        val iceServers = listOf(
+            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
+        )
 
-                peerConnection = peerConnectionFactory?.createPeerConnection(
-                    rtcConfig,
-                    peerConnectionObserver
-                ) ?: throw IllegalStateException("PeerConnectionFactory not initialized")
-
-                renderer.init(eglBase?.eglBaseContext, null)
-                videoTrack?.addSink(renderer)
-
-                if (isCaller) {
-                    createOffer()
-                } else {
-                    listenForOffer()
-                }
-                listenForIceCandidates()
-
-                Log.d(TAG, "PeerConnection initialized")
-            } catch (e: Exception) {
-                Log.e(TAG, "initializePeerConnection error", e)
+        val rtcConfig = PeerConnection.RTCConfiguration(iceServers)
+        peerConnection = peerConnectionFactory.createPeerConnection(rtcConfig, object : PeerConnection.Observer {
+            override fun onIceCandidate(candidate: IceCandidate) {
+                sendIceCandidate(candidate)
             }
-        }
+
+            override fun onIceCandidatesRemoved(p0: Array<out IceCandidate?>?) {}
+
+            override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
+                val track = receiver?.track()
+                if (track is VideoTrack) {
+                    // Handling video track: add it to the remote renderer (UI thread update)
+                    Handler(Looper.getMainLooper()).post {
+                        track.addSink(remoteRenderer)
+                    }
+                }
+            }
+
+            override fun onSignalingChange(newState: PeerConnection.SignalingState?) {}
+            override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState?) {}
+            override fun onIceConnectionReceivingChange(receiving: Boolean) {}
+            override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {}
+            override fun onRemoveStream(stream: MediaStream?) {}
+            override fun onDataChannel(channel: DataChannel?) {}
+            override fun onRenegotiationNeeded() {}
+            override fun onAddStream(stream: MediaStream?) {}
+            override fun onTrack(transceiver: RtpTransceiver?) {}
+        })!!
     }
 
-    private fun createOffer() {
-        executor.execute {
-            val constraints = MediaConstraints().apply {
-                mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
-            }
-
-            peerConnection?.createOffer(object : SdpObserver {
-                override fun onCreateSuccess(desc: SessionDescription) {
-                    Log.d(TAG, "createOffer onCreateSuccess")
-                    peerConnection?.setLocalDescription(object : SdpObserver {
-                        override fun onSetSuccess() {
-                            Log.d(TAG, "setLocalDescription onSetSuccess")
-                            sendOffer(desc.description)
-                        }
-                        override fun onSetFailure(error: String) {
-                            Log.e(TAG, "setLocalDescription onSetFailure: $error")
-                        }
-                        override fun onCreateSuccess(desc: SessionDescription?) {}
-                        override fun onCreateFailure(error: String?) {}
-                    }, desc)
-                }
-                override fun onCreateFailure(error: String) {
-                    Log.e(TAG, "createOffer onCreateFailure: $error")
-                }
-                override fun onSetSuccess() {}
-                override fun onSetFailure(error: String) {}
-            }, constraints)
-        }
-    }
-
-    private fun sendOffer(offer: String) {
-        firebaseRef.child("signaling").child(userId).child("offer")
-            .setValue(offer)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Offer sent successfully")
-                } else {
-                    Log.e(TAG, "Failed to send offer")
-                }
-            }
+    // This method is now being used to set the renderer for remote video
+    fun setRemoteRenderer(renderer: SurfaceViewRenderer) {
+        remoteRenderer = renderer
+        renderer.init(eglBase.eglBaseContext, null)
+        renderer.setMirror(true) // Optional: mirror the remote video
     }
 
     private fun listenForOffer() {
-        firebaseRef.child("signaling").child(userId).child("offer")
+        signalingRef.child("signaling").child(localUserId).child("offer")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    snapshot.getValue(String::class.java)?.let { offer ->
-                        handleOffer(offer)
+                    val offer = snapshot.getValue(SessionDescription::class.java)
+                    if (offer != null) {
+                        Log.d("WebRTC", "Offer received: $offer")
+                        if (::peerConnection.isInitialized) {
+                            peerConnection.setRemoteDescription(object : SdpObserver {
+                                override fun onSetSuccess() {
+                                    createAndSendAnswer()
+                                }
+
+                                override fun onSetFailure(error: String?) {
+                                    Log.e("WebRTC", "Failed to set remote description: $error")
+                                }
+
+                                override fun onCreateSuccess(p0: SessionDescription?) {}
+                                override fun onCreateFailure(p0: String?) {}
+                            }, offer)
+                        }
                     }
                 }
+
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e(TAG, "listenForOffer cancelled: ${error.message}")
+                    Log.e("WebRTC", "Offer listener cancelled: ${error.message}")
                 }
             })
     }
 
-    private fun handleOffer(offer: String) {
-        executor.execute {
-            peerConnection?.setRemoteDescription(object : SdpObserver {
-                override fun onSetSuccess() {
-                    Log.d(TAG, "setRemoteDescription onSetSuccess")
-                    createAnswer()
-                }
-                override fun onSetFailure(error: String) {
-                    Log.e(TAG, "setRemoteDescription onSetFailure: $error")
-                }
-                override fun onCreateSuccess(desc: SessionDescription?) {}
-                override fun onCreateFailure(error: String?) {}
-            }, SessionDescription(SessionDescription.Type.OFFER, offer))
+    private fun createAndSendAnswer() {
+        val mediaConstraints = MediaConstraints().apply {
+            mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
+            mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
         }
-    }
 
-    private fun createAnswer() {
-        executor.execute {
-            peerConnection?.createAnswer(object : SdpObserver {
-                override fun onCreateSuccess(desc: SessionDescription) {
-                    Log.d(TAG, "createAnswer onCreateSuccess")
-                    peerConnection?.setLocalDescription(object : SdpObserver {
-                        override fun onSetSuccess() {
-                            Log.d(TAG, "setLocalDescription onSetSuccess")
-                            sendAnswer(desc.description)
-                        }
-                        override fun onSetFailure(error: String) {
-                            Log.e(TAG, "setLocalDescription onSetFailure: $error")
-                        }
-                        override fun onCreateSuccess(desc: SessionDescription?) {}
-                        override fun onCreateFailure(error: String?) {}
-                    }, desc)
-                }
-                override fun onCreateFailure(error: String) {
-                    Log.e(TAG, "createAnswer onCreateFailure: $error")
-                }
-                override fun onSetSuccess() {}
-                override fun onSetFailure(error: String) {}
-            }, MediaConstraints())
-        }
-    }
+        peerConnection.createAnswer(object : SdpObserver {
+            override fun onCreateSuccess(sessionDescription: SessionDescription) {
+                peerConnection.setLocalDescription(object : SdpObserver {
+                    override fun onSetSuccess() {
+                        signalingRef.child("signaling").child(remoteUserId).child("answer")
+                            .setValue(sessionDescription)
+                    }
 
-    private fun sendAnswer(answer: String) {
-        firebaseRef.child("signaling").child(userId).child("answer")
-            .setValue(answer)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Answer sent successfully")
-                } else {
-                    Log.e(TAG, "Failed to send answer")
-                }
+                    override fun onSetFailure(error: String?) {
+                        Log.e("WebRTC", "Failed to set local description: $error")
+                    }
+
+                    override fun onCreateSuccess(p0: SessionDescription?) {}
+                    override fun onCreateFailure(p0: String?) {}
+                }, sessionDescription)
             }
+
+            override fun onSetSuccess() {}
+            override fun onSetFailure(error: String?) {
+                Log.e("WebRTC", "Failed to set local description: $error")
+            }
+
+            override fun onCreateFailure(error: String?) {
+                Log.e("WebRTC", "Failed to create answer: $error")
+            }
+        }, mediaConstraints)
     }
 
     private fun sendIceCandidate(candidate: IceCandidate) {
-        val candidateMap = mapOf(
-            "sdpMid" to candidate.sdpMid,
-            "sdpMLineIndex" to candidate.sdpMLineIndex,
-            "sdp" to candidate.sdp
-        )
-
-        firebaseRef.child("signaling").child(userId).child("iceCandidates")
-            .push().setValue(candidateMap)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "ICE candidate sent")
-                } else {
-                    Log.e(TAG, "Failed to send ICE candidate")
-                }
-            }
+        signalingRef.child("signaling").child(remoteUserId).child("iceCandidates").push().setValue(candidate)
     }
 
-    fun listenForIceCandidates() {
-        firebaseRef.child("signaling").child(userId).child("iceCandidates")
+    private fun listenForIceCandidates() {
+        signalingRef.child("signaling").child(localUserId).child("iceCandidates")
             .addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(snapshot: DataSnapshot, prevKey: String?) {
-                    try {
-                        val candidate = snapshot.getValue(Map::class.java)?.let {
-                            IceCandidate(
-                                it["sdpMid"] as String,
-                                (it["sdpMLineIndex"] as Long).toInt(),
-                                it["sdp"] as String
-                            )
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val candidate = snapshot.getValue(IceCandidate::class.java)
+                    if (candidate != null) {
+                        Log.d("WebRTC", "ICE Candidate received: $candidate")
+                        if (::peerConnection.isInitialized) {
+                            peerConnection.addIceCandidate(candidate)
                         }
-                        candidate?.let {
-                            executor.execute {
-                                peerConnection?.addIceCandidate(it)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "onChildAdded error", e)
                     }
                 }
-                override fun onChildChanged(snapshot: DataSnapshot, prevKey: String?) {}
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
                 override fun onChildRemoved(snapshot: DataSnapshot) {}
-                override fun onChildMoved(snapshot: DataSnapshot, prevKey: String?) {}
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e(TAG, "listenForIceCandidates cancelled: ${error.message}")
+                    Log.e("WebRTC", "ICE Candidate listener cancelled: ${error.message}")
                 }
             })
     }
 
-    fun setupRemoteRenderer(remoteRenderer: SurfaceViewRenderer) {
-        Handler(Looper.getMainLooper()).post {
-            remoteRenderer.init(eglBase?.eglBaseContext, null)
-            remoteRenderer.setMirror(false)
-            remoteRenderer.setEnableHardwareScaler(true)
-            Log.d(TAG, "Remote renderer initialized on main thread")
-        }
-    }
-
-    private var isFactoryDisposed = false
-
     fun cleanup() {
-        // Avoid duplicate cleanup
-        if (isFactoryDisposed) return
-
-        try {
-            peerConnection?.close()
-            peerConnection = null
-
-            peerConnectionFactory?.dispose()
-            isFactoryDisposed = true
-
-            // Also clean up any other references
-            peerConnectionFactory = null
-
-            Log.d(TAG, "WebRTC resources cleaned up successfully.")
-
-        } catch (e: Exception) {
-            Log.e(TAG, "cleanup error", e)
+        executor.execute {
+            peerConnection.close()
+            peerConnection.dispose()
+            peerConnectionFactory.dispose()
+            remoteRenderer?.release() // Release the remote renderer resources
         }
     }
-
 }
+
