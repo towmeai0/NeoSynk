@@ -20,7 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ayudevices.neosynkparent.viewmodel.ProfileViewModel
-
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileScreen(
@@ -30,6 +30,20 @@ fun ProfileScreen(
     val name = viewModel.name
     val Loc = viewModel.Loc
     val gender = viewModel.gender
+
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var shouldNavigate by remember { mutableStateOf(false) }
+
+    // Handle navigation after loading
+    if (shouldNavigate) {
+        LaunchedEffect(Unit) {
+            delay(1000) // optional delay
+            isLoading = false
+            shouldNavigate = false
+            navController.navigate("home")
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -42,7 +56,6 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxSize()
         ) {
-
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
@@ -97,11 +110,27 @@ fun ProfileScreen(
                 onValueChange = { viewModel.gender = it }
             )
 
+            if (errorMessage.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 14.sp
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    navController.navigate("home")
+                    if (name.isEmpty() || Loc.isEmpty() || gender.isEmpty()) {
+                        errorMessage = "Please fill in all fields."
+                    } else {
+                        errorMessage = ""
+                        isLoading = true
+                        viewModel.saveUserProfile()
+                        shouldNavigate = true
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(24.dp),
@@ -109,7 +138,11 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text(text = "Continue >", color = Color.White, fontSize = 16.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(text = "Continue >", color = Color.White, fontSize = 16.sp)
+                }
             }
         }
     }
@@ -139,8 +172,6 @@ fun ParentProfileInputField(hint: String, value: String, onValueChange: (String)
         shape = RoundedCornerShape(12.dp)
     )
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
