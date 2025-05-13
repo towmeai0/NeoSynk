@@ -29,7 +29,7 @@ fun ProfileDisplay(navController: NavController) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val databaseRef = FirebaseDatabase.getInstance().getReference("NeoSynk")
 
-    // Fetch profile data once
+
     LaunchedEffect(userId) {
         userId?.let {
             databaseRef.child(it).addListenerForSingleValueEvent(object : ValueEventListener {
@@ -40,7 +40,7 @@ fun ProfileDisplay(navController: NavController) {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    // Log or handle error
+
                 }
             })
         }
@@ -120,3 +120,8 @@ fun ProfileTextItem(label: String, value: String) {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun Scre(){
+    ProfileDisplay(navController = rememberNavController())
+}
