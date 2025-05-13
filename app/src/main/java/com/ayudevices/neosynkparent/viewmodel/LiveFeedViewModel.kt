@@ -16,9 +16,8 @@ import org.webrtc.VideoTrack
 class LiveFeedViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
-) : ViewModel() {
-
-    private val remoteUserId: String = savedStateHandle["remoteUserId"] ?: ""
+) : ViewModel()
+{
 
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
@@ -35,6 +34,13 @@ class LiveFeedViewModel @Inject constructor(
 
     private val userId: String = auth.currentUser?.uid ?: ""
 
+    private val localUserId: String = "parent001" // Parent app's user ID
+
+    // Child's remoteUserId
+    private val remoteUserId: String = "child001" // Child app's user ID
+
+    private val signalingRef = database.getReference("NeoSynk").child("signaling")
+
     init {
         if (userId.isNotEmpty()) {
             listenToStatus()
@@ -42,11 +48,11 @@ class LiveFeedViewModel @Inject constructor(
     }
 
     private fun listenToStatus() {
-        val statusRef = database.getReference("status").child(userId)
+        val statusRef = database.getReference("NeoSynk").child("status")
         statusListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val status = snapshot.getValue(String::class.java) ?: "Disconnected"
-                _connectionStatus.value = status
+                val status = snapshot.getValue(Boolean::class.java) ?: false
+                _connectionStatus.value = if (status) "Connected" else "Disconnected"
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -69,29 +75,32 @@ class LiveFeedViewModel @Inject constructor(
         _connectionStatus.value = "Connecting..."
         _isViewing.value = true
 
-        // Set request flag in Firebase
-        database.getReference("requests").child(userId).setValue(true)
+        // Set the status to "true" (connected) in the signaling node under userId
+        database.getReference("NeoSynk").child("status").setValue(true)
 
+        // Set offer data for signaling if needed
         if (webRtcManager == null) {
             webRtcManager = WebRTCManager(
                 context = context,
-                signalingRef = database.getReference("signaling"),
-                localUserId = userId,
-                remoteUserId = remoteUserId
+                database.getReference("NeoSynk").child("signaling")
             )
         }
     }
+
 
     private fun stopViewing() {
         if (userId.isEmpty()) return
         _connectionStatus.value = "Disconnected"
         _isViewing.value = false
 
-        // Remove request flag in Firebase
-        database.getReference("requests").child(userId).setValue(false)
+        // Update the status to "false" (disconnected) in the signaling node under userId
+        database.getReference("NeoSynk").child("status").setValue(false)
+
+        // Cleanup the WebRTC manager
         webRtcManager?.cleanup()
         webRtcManager = null
     }
+
 
     fun setRemoteRenderer(renderer: CustomSurfaceViewRenderer) {
         webRtcManager?.setRemoteRenderer(renderer)
@@ -101,7 +110,7 @@ class LiveFeedViewModel @Inject constructor(
         super.onCleared()
         // Clean up listeners and WebRTC
         statusListener?.let {
-            database.getReference("status").child(userId).removeEventListener(it)
+            database.getReference("status").removeEventListener(it)
         }
         stopViewing()
     }

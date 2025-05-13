@@ -28,7 +28,7 @@ fun ProfileScreen(
     navController: NavController
 ) {
     val name = viewModel.name
-    val Loc = viewModel.Loc
+    val Loc = viewModel.loc
     val gender = viewModel.gender
 
     var isLoading by remember { mutableStateOf(false) }
@@ -101,7 +101,7 @@ fun ProfileScreen(
             ParentProfileInputField(
                 hint = "Location",
                 value = Loc,
-                onValueChange = { viewModel.Loc = it }
+                onValueChange = { viewModel.loc = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
             ParentProfileInputField(

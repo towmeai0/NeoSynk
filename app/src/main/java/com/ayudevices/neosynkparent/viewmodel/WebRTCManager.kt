@@ -9,12 +9,16 @@ import org.webrtc.*
 import java.util.concurrent.Executors
 import org.webrtc.PeerConnection
 
+data class SignalingMessage(
+    val type: String? = null,
+    val sdp: String? = null
+)
+
 class WebRTCManager(
     private val context: Context,
-    private val signalingRef: DatabaseReference,
-    private val localUserId: String,
-    private val remoteUserId: String
-) {
+    private val signalingRef: DatabaseReference
+)
+{
     private val executor = Executors.newSingleThreadExecutor()
     private lateinit var peerConnectionFactory: PeerConnectionFactory
     private lateinit var peerConnection: PeerConnection
@@ -69,11 +73,23 @@ class WebRTCManager(
                     }
                 }
             }
+            override fun onSignalingChange(newState: PeerConnection.SignalingState?) {
+                Log.d("WebRTC", "Signaling state changed: $newState")
+            }
 
-            override fun onSignalingChange(newState: PeerConnection.SignalingState?) {}
-            override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState?) {}
+            override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState?) {
+                Log.d("WebRTC", "ICE connection state changed: $newState")
+                if (newState == PeerConnection.IceConnectionState.CONNECTED) {
+                    Log.d("WebRTC", "PeerConnection established successfully")
+                } else if (newState == PeerConnection.IceConnectionState.FAILED) {
+                    Log.e("WebRTC", "PeerConnection failed to connect")
+                }
+            }
+
+            override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {
+                Log.d("WebRTC", "ICE gathering state changed: $newState")
+            }
             override fun onIceConnectionReceivingChange(receiving: Boolean) {}
-            override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {}
             override fun onRemoveStream(stream: MediaStream?) {}
             override fun onDataChannel(channel: DataChannel?) {}
             override fun onRenegotiationNeeded() {}
@@ -90,12 +106,17 @@ class WebRTCManager(
     }
 
     private fun listenForOffer() {
-        signalingRef.child("signaling").child(localUserId).child("offer")
+        signalingRef.child("child001").child("offer")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val offer = snapshot.getValue(SessionDescription::class.java)
-                    if (offer != null) {
+                    val offerData = snapshot.getValue(SignalingMessage::class.java)
+                    if (offerData != null && offerData.sdp != null && offerData.type != null) {
+                        val offer = SessionDescription(
+                            SessionDescription.Type.fromCanonicalForm(offerData.type!!),
+                            offerData.sdp!!
+                        )
                         Log.d("WebRTC", "Offer received: $offer")
+
                         if (::peerConnection.isInitialized) {
                             peerConnection.setRemoteDescription(object : SdpObserver {
                                 override fun onSetSuccess() {
@@ -119,9 +140,10 @@ class WebRTCManager(
             })
     }
 
+
     private fun createAndSendAnswer() {
         val mediaConstraints = MediaConstraints().apply {
-            mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
+            mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"))
             mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
         }
 
@@ -129,7 +151,7 @@ class WebRTCManager(
             override fun onCreateSuccess(sessionDescription: SessionDescription) {
                 peerConnection.setLocalDescription(object : SdpObserver {
                     override fun onSetSuccess() {
-                        signalingRef.child("signaling").child(remoteUserId).child("answer")
+                        signalingRef.child("parent001").child("answer")
                             .setValue(sessionDescription)
                     }
 
@@ -154,18 +176,30 @@ class WebRTCManager(
     }
 
     private fun sendIceCandidate(candidate: IceCandidate) {
-        signalingRef.child("signaling").child(remoteUserId).child("iceCandidates").push().setValue(candidate)
+        val candidateMap = mapOf(
+            "sdpMid" to candidate.sdpMid,
+            "sdpMLineIndex" to candidate.sdpMLineIndex,
+            "candidate" to candidate.sdp
+        )
+        signalingRef.child("parent001").child("iceCandidates").push().setValue(candidateMap)
     }
 
     private fun listenForIceCandidates() {
-        signalingRef.child("signaling").child(localUserId).child("iceCandidates")
+        signalingRef.child("child001").child("iceCandidates")
             .addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                    val candidate = snapshot.getValue(IceCandidate::class.java)
-                    if (candidate != null) {
-                        Log.d("WebRTC", "ICE Candidate received: $candidate")
-                        if (::peerConnection.isInitialized) {
-                            peerConnection.addIceCandidate(candidate)
+                    val candidateMap = snapshot.getValue(object : GenericTypeIndicator<Map<String, Any>>() {}) // Use GenericTypeIndicator here
+                    if (candidateMap != null) {
+                        val sdpMid = candidateMap["sdpMid"] as? String
+                        val sdpMLineIndex = (candidateMap["sdpMLineIndex"] as? Long)?.toInt()
+                        val sdp = candidateMap["candidate"] as? String
+
+                        if (sdpMid != null && sdpMLineIndex != null && sdp != null) {
+                            val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdp)
+                            Log.d("WebRTC", "ICE Candidate received: $candidate")
+                            if (::peerConnection.isInitialized) {
+                                peerConnection.addIceCandidate(candidate)
+                            }
                         }
                     }
                 }
@@ -189,4 +223,3 @@ class WebRTCManager(
         }
     }
 }
-
