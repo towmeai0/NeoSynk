@@ -112,6 +112,7 @@ fun onLoginSuccess(navController: NavHostController) {
     navController.navigate(Screen.Profile.route) {
         popUpTo(Screen.Login.route) { inclusive = true }
     }
+
 }
 
 @Preview(showBackground = true)

@@ -11,6 +11,7 @@ import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,8 +26,11 @@ class TokenSender @Inject constructor(
     private val authRepository: AuthRepository
 ) {
     fun sendFcmTokenToServer(token: String) {
+
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
         val request = FcmTokenRequest(
-            userId = "parent_001",
+            userId = userId.toString(),
             fcmToken = token,
             appType = "parent"
         )
@@ -35,7 +39,7 @@ class TokenSender @Inject constructor(
             try {
                 val response = fcmApiService.updateFcmToken(request)
                 if (response.isSuccessful) {
-                    Log.d("FCM", "Token updated: ${response.body()?.detail}")
+                    Log.d("FCM", "Token updated: ${response.body()?.detail} for user ${userId} ")
                 } else {
                     Log.e("FCM", "Failed: ${response.code()} ${response.message()}")
                 }
