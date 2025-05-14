@@ -100,11 +100,10 @@ class ChatRepository @Inject constructor(
                 )
             }
 
-            // Handle vital requests
             when (intent) {
                 "weight (in kg)_query", "height (in cm)_query", "heart rate (bpm)_query", "SpO2 (%)_query" -> {
                     val vitalType = when (intent) {
-                        "weight (in kg)_query" -> "weight"
+                        "Weight_vital_request" -> "weight"
                         "height (in cm)_query" -> "height"
                         "heart rate (bpm)_query" -> "heart_rate"
                         "SpO2 (%)_query" -> "spo2"
