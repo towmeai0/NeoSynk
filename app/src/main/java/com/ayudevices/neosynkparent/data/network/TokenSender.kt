@@ -6,6 +6,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
 import com.ayudevices.neosynkparent.data.model.ChatRequest
+import com.ayudevices.neosynkparent.data.model.DeviceBodyRequest
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
@@ -57,6 +58,23 @@ class TokenSender @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("Vitals", "Error requesting vitals", e)
+            }
+        }
+    }
+
+    fun requestDevice(parentId: String, childId: String = "child_001", reqVitals: List<String>) {
+        Log.d("Device", "Device type: ${reqVitals}")
+        val request = DeviceBodyRequest(parentId, childId, reqVitals)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = fcmApiService.requestDevice(request)
+                if (response.isSuccessful) {
+                    Log.d("Vitals", "Device requested successfully ${response.code()} ${response.message()}")
+                } else {
+                    Log.e("Vitals", "Failed to request device: ${response.code()} ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("Vitals", "Error requesting device", e)
             }
         }
     }

@@ -34,7 +34,6 @@ fun DocsScreen(
     milestoneViewModel: com.ayudevices.neosynkparent.viewmodel.MilestoneViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val selectedFileName by viewModel.selectedFileName.collectAsState()
 
     // Collect vitals and intent from ViewModel
     val height = viewModel.height
@@ -56,20 +55,10 @@ fun DocsScreen(
                 .padding(16.dp)
         ) {
             TopAppBar(
-                title = { Text("PDF", color = Color.White) },
+                title = { Text("Current Report", color = Color.White) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            FileSelectorBox(onClick = {
-                // Handle file selection logic
-            })
-
-            selectedFileName?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Selected file: $it", color = Color.White)
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -131,7 +120,7 @@ fun DocsScreen(
                 try {
                     val pdfFile: File = generateBabyReportPDF(
                         context = context,
-                        name = "Hill", // You might want to make this dynamic
+                        name = "cgi", // You might want to make this dynamic
                         height = height,
                         weight = weight,
                         heartRate = heartRate,

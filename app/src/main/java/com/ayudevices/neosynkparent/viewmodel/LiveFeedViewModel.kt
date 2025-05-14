@@ -37,7 +37,7 @@ class LiveFeedViewModel @Inject constructor(
     private val localUserId: String = "parent001" // Parent app's user ID
 
     // Child's remoteUserId
-    private val remoteUserId: String = "child001" // Child app's user ID
+    private val remoteUserId: String = "child_001" // Child app's user ID
 
     private val signalingRef = database.getReference("NeoSynk").child("signaling")
 

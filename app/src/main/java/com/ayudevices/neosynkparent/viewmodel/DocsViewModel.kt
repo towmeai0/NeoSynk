@@ -19,14 +19,6 @@ class DocsViewModel @Inject constructor(
     private val chatDao: ChatDao
 ) : ViewModel() {
 
-    // File name state
-    private val _selectedFileName = MutableStateFlow<String?>(null)
-    val selectedFileName: StateFlow<String?> = _selectedFileName
-
-    fun onFileSelected(fileName: String) {
-        _selectedFileName.value = fileName
-    }
-
     // Vitals
     var weight by mutableStateOf("Loading...")
         private set
@@ -70,22 +62,22 @@ class DocsViewModel @Inject constructor(
                     when {
                         msg.contains("weight") -> {
                             weight = extractValue(msg, "weight")
-                            latestIntent = "weight_vital_request"
+                            latestIntent = "weight (in kg)_query"
                         }
 
                         msg.contains("height") -> {
                             height = extractValue(msg, "height")
-                            latestIntent = "height_vital_request"
+                            latestIntent = "height (in cm)_query"
                         }
 
                         msg.contains("heart rate") || msg.contains("heart_rate") -> {
                             heartRate = extractValue(msg, "heart_rate")
-                            latestIntent = "heart_rate_vital_request"
+                            latestIntent = "heart rate (bpm)_query"
                         }
 
                         msg.contains("spo2") -> {
                             spo2 = extractValue(msg, "spo2")
-                            latestIntent = "spo2_vital_request"
+                            latestIntent = "SpO2 (%)_query"
                         }
                     }
                 }

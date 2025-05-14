@@ -1,6 +1,7 @@
 package com.ayudevices.neosynkparent.data.network
 
 import com.ayudevices.neosynkparent.data.model.BaseResponse
+import com.ayudevices.neosynkparent.data.model.DeviceBodyRequest
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalData
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
@@ -17,6 +18,9 @@ interface FcmApiService {
 
     @POST("vital-request")
     suspend fun requestVitals(@Body request: VitalsBodyRequest): Response<VitalsRequestResponse>
+
+    @POST("device-request")
+    suspend fun requestDevice(@Body request: DeviceBodyRequest): Response<VitalsRequestResponse>
 
     @GET("vitals/{vitalId}")
     suspend fun fetchVitals(@Path("vitalId") responseKey: String): Response<VitalData>
