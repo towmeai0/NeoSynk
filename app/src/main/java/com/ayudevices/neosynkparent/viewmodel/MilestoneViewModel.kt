@@ -448,7 +448,6 @@ class MilestoneViewModel @Inject constructor(
             repository.getAllResponses().collect { savedResponses ->
                 val completed = mutableSetOf<Int>()
 
-                // Load saved responses into _responses
                 savedResponses.forEach { response ->
                     val leap = response.leap
                     val category = response.category

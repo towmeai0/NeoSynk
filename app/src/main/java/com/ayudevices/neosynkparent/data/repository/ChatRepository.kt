@@ -10,8 +10,10 @@ import com.ayudevices.neosynkparent.data.model.ChatRequest
 import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
 
 class ChatRepository @Inject constructor(
@@ -22,6 +24,11 @@ class ChatRepository @Inject constructor(
     private val pendingIntentDao: PendingIntentDao,
     private val authRepository: AuthRepository
 ) {
+
+    // Flow to notify ViewModel/UI of navigation intents (e.g., milestone_tab)
+    private val _navigationIntent = MutableSharedFlow<String>()
+    val navigationIntent = _navigationIntent.asSharedFlow()
+
     suspend fun sendMessage(message: String) {
         val userId = authRepository.getCurrentUserId().toString()
         Log.d("ChatRepository", userId)
@@ -64,15 +71,43 @@ class ChatRepository @Inject constructor(
             val intent = response.response.intent
             Log.d("ChatRepository", "Intent:$intent")
             Log.d("ChatRepository", "Message:$message")
+
             chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot"))
 
+
+            if (intent == "milestone_tab") {
+                delay(2000)
+                _navigationIntent.emit("MilestonesTab")
+            }
+
+            if (intent == "device_connection_request") {
+                tokenSender.requestDevice(userId,"child_001", listOf("weight"))
+                chatDao.insertMessage(
+                    ChatEntity(
+                        message = "Okay, sending device req.",
+                        sender = "bot"
+                    )
+                )
+            }
+
+            if (intent == "spo2_heart_rate_connection") {
+                tokenSender.requestDevice(userId,"child_001", listOf("vitals"))
+                chatDao.insertMessage(
+                    ChatEntity(
+                        message = "Okay, sending device req.",
+                        sender = "bot"
+                    )
+                )
+            }
+
+            // Handle vital requests
             when (intent) {
-                "weight_vital_request", "height_vital_request", "heart_rate_vital_request", "spo2_vital_request" -> {
+                "weight (in kg)_query", "height (in cm)_query", "heart rate (bpm)_query", "SpO2 (%)_query" -> {
                     val vitalType = when (intent) {
-                        "weight_vital_request" -> "weight"
-                        "height_vital_request" -> "height"
-                        "heart_rate_vital_request" -> "heart_rate"
-                        "spo2_vital_request" -> "spo2"
+                        "weight (in kg)_query" -> "weight"
+                        "height (in cm)_query" -> "height"
+                        "heart rate (bpm)_query" -> "heart_rate"
+                        "SpO2 (%)_query" -> "spo2"
                         else -> null
                     }
                     if (vitalType != null) {
@@ -103,5 +138,6 @@ class ChatRepository @Inject constructor(
             )
         }
     }
+
     fun getAllMessages(): Flow<List<ChatEntity>> = chatDao.getAllMessages()
 }
