@@ -23,6 +23,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d("FCM", "Message Notification Body: ${it.body}")
         }
         val type = remoteMessage.data["type"] // Assume FCM payload contains "type" field
+        Log.d("FCM", type.toString())
         if (type == "vital_completed") {
             val vitalId = remoteMessage.data["vital_id"]
             if (!vitalId.isNullOrEmpty()) {

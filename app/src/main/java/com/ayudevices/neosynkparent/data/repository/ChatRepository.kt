@@ -25,10 +25,6 @@ class ChatRepository @Inject constructor(
     private val authRepository: AuthRepository
 ) {
 
-    // Flow to notify ViewModel/UI of navigation intents (e.g., milestone_tab)
-    private val _navigationIntent = MutableSharedFlow<String>()
-    val navigationIntent = _navigationIntent.asSharedFlow()
-
     suspend fun sendMessage(message: String) {
         val userId = authRepository.getCurrentUserId().toString()
         Log.d("ChatRepository", userId)
@@ -41,7 +37,7 @@ class ChatRepository @Inject constructor(
                 when (message.lowercase()) {
                     "yes" -> {
                         tokenSender.requestVitals(
-                            parentId = userId,
+                            parentId = "parent_001",
                             childId = "child_001",
                             reqVitals = listOf(pendingIntent.vitalType ?: return)
                         )
@@ -74,12 +70,6 @@ class ChatRepository @Inject constructor(
 
             chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot"))
 
-
-            if (intent == "milestone_tab") {
-                delay(2000)
-                _navigationIntent.emit("MilestonesTab")
-            }
-
             if (intent == "device_connection_request") {
                 tokenSender.requestDevice(userId,"child_001", listOf("weight"))
                 chatDao.insertMessage(
@@ -100,13 +90,14 @@ class ChatRepository @Inject constructor(
                 )
             }
 
+            // Handle vital requests
             when (intent) {
-                "weight (in kg)_query", "height (in cm)_query", "heart rate (bpm)_query", "SpO2 (%)_query" -> {
+                "weight_vital_request", "height_vital_request", "heart_rate_vital_request", "spo2_vital_request" -> {
                     val vitalType = when (intent) {
-                        "Weight_vital_request" -> "weight"
-                        "height (in cm)_query" -> "height"
-                        "heart rate (bpm)_query" -> "heart_rate"
-                        "SpO2 (%)_query" -> "spo2"
+                        "weight_vital_request" -> "weight"
+                        "height_vital_request" -> "height"
+                        "heart_rate_vital_request" -> "heart_rate"
+                        "spo2_vital_request" -> "spo2"
                         else -> null
                     }
                     if (vitalType != null) {

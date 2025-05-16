@@ -11,6 +11,7 @@ import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ class TokenSender @Inject constructor(
     private val authRepository: AuthRepository
 ) {
     fun sendFcmTokenToServer(token: String) {
+
         val request = FcmTokenRequest(
             userId = "parent_001",
             fcmToken = token,
@@ -35,7 +37,7 @@ class TokenSender @Inject constructor(
             try {
                 val response = fcmApiService.updateFcmToken(request)
                 if (response.isSuccessful) {
-                    Log.d("FCM", "Token updated: ${response.body()?.detail}")
+                    Log.d("FCM", "Token updated: ${response.body()?.detail} ")
                 } else {
                     Log.e("FCM", "Failed: ${response.code()} ${response.message()}")
                 }
@@ -45,7 +47,7 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestVitals(parentId: String, childId: String = "child_001", reqVitals: List<String>) {
+    fun requestVitals(parentId: String = "parent_001", childId: String = "child_001", reqVitals: List<String>) {
         Log.d("Vitals", "Vital type: ${reqVitals}")
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {
