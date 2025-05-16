@@ -27,10 +27,8 @@ class TokenSender @Inject constructor(
 ) {
     fun sendFcmTokenToServer(token: String) {
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-
         val request = FcmTokenRequest(
-            userId = userId.toString(),
+            userId = "parent_001",
             fcmToken = token,
             appType = "parent"
         )
@@ -39,7 +37,7 @@ class TokenSender @Inject constructor(
             try {
                 val response = fcmApiService.updateFcmToken(request)
                 if (response.isSuccessful) {
-                    Log.d("FCM", "Token updated: ${response.body()?.detail} for user ${userId} ")
+                    Log.d("FCM", "Token updated: ${response.body()?.detail} ")
                 } else {
                     Log.e("FCM", "Failed: ${response.code()} ${response.message()}")
                 }
@@ -49,7 +47,7 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestVitals(parentId: String, childId: String = "child_001", reqVitals: List<String>) {
+    fun requestVitals(parentId: String = "parent_001", childId: String = "child_001", reqVitals: List<String>) {
         Log.d("Vitals", "Vital type: ${reqVitals}")
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {

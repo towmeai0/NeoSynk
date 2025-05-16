@@ -17,20 +17,6 @@ class ChatViewModel @Inject constructor(
 
     val messages = repository.getAllMessages()
 
-    // Exposed event to notify UI for milestone_tab redirection
-    private val _milestoneEvent = MutableSharedFlow<Unit>()
-    val milestoneEvent: SharedFlow<Unit> = _milestoneEvent
-
-    init {
-        viewModelScope.launch {
-            repository.navigationIntent.collect { intent ->
-                if (intent == "milestone_tab") {
-                    _milestoneEvent.emit(Unit)
-                }
-            }
-        }
-    }
-
     fun onSendMessage(text: String) {
         viewModelScope.launch {
             repository.sendMessage(text)

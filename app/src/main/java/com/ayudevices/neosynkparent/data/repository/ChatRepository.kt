@@ -25,10 +25,6 @@ class ChatRepository @Inject constructor(
     private val authRepository: AuthRepository
 ) {
 
-    // Flow to notify ViewModel/UI of navigation intents (e.g., milestone_tab)
-    private val _navigationIntent = MutableSharedFlow<String>()
-    val navigationIntent = _navigationIntent.asSharedFlow()
-
     suspend fun sendMessage(message: String) {
         val userId = authRepository.getCurrentUserId().toString()
         Log.d("ChatRepository", userId)
@@ -41,7 +37,7 @@ class ChatRepository @Inject constructor(
                 when (message.lowercase()) {
                     "yes" -> {
                         tokenSender.requestVitals(
-                            parentId = userId,
+                            parentId = "parent_001",
                             childId = "child_001",
                             reqVitals = listOf(pendingIntent.vitalType ?: return)
                         )
@@ -73,12 +69,6 @@ class ChatRepository @Inject constructor(
             Log.d("ChatRepository", "Message:$message")
 
             chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot"))
-
-
-            if (intent == "milestone_tab") {
-                delay(2000)
-                _navigationIntent.emit("MilestonesTab")
-            }
 
             if (intent == "device_connection_request") {
                 tokenSender.requestDevice(userId,"child_001", listOf("weight"))
