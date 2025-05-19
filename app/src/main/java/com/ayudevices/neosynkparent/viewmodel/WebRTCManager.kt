@@ -23,8 +23,8 @@ class WebRTCManager(
     private lateinit var peerConnectionFactory: PeerConnectionFactory
     private lateinit var peerConnection: PeerConnection
     private var remoteRenderer: SurfaceViewRenderer? = null
-
     private var eglBase: EglBase = EglBase.create()
+    private val track: VideoTrack? = null
 
     init {
         executor.execute {
@@ -102,7 +102,7 @@ class WebRTCManager(
     fun setRemoteRenderer(renderer: SurfaceViewRenderer) {
         remoteRenderer = renderer
         renderer.init(eglBase.eglBaseContext, null)
-        renderer.setMirror(true) // Optional: mirror the remote video
+
     }
 
     private fun listenForOffer() {
@@ -113,7 +113,7 @@ class WebRTCManager(
                     if (offerData != null && offerData.sdp != null && offerData.type != null) {
                         val offer = SessionDescription(
                             SessionDescription.Type.fromCanonicalForm(offerData.type!!),
-                            offerData.sdp!!
+                            offerData.sdp
                         )
                         Log.d("WebRTC", "Offer received: $offer")
 
@@ -214,12 +214,16 @@ class WebRTCManager(
     }
 
 
-    fun cleanup() {
+    /*fun cleanup() {
         executor.execute {
-            peerConnection.close()
             peerConnection.dispose()
             peerConnectionFactory.dispose()
             remoteRenderer?.release() // Release the remote renderer resources
         }
+    }*/
+
+    fun stopstreaming() {
+        track?.removeSink (remoteRenderer)
+        remoteRenderer?.release()
     }
 }

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import org.webrtc.VideoTrack
 
 @HiltViewModel
 class LiveFeedViewModel @Inject constructor(
@@ -56,15 +55,9 @@ class LiveFeedViewModel @Inject constructor(
         statusRef.addValueEventListener(statusListener as ValueEventListener)
     }
 
-    fun toggleViewing() {
-        if (_isViewing.value) {
-            stopViewing()
-        } else {
-            startViewing()
-        }
-    }
 
-    private fun startViewing() {
+
+    internal fun startViewing(context: Context) {
         if (userId.isEmpty()) return
         _connectionStatus.value = "Connecting..."
         _isViewing.value = true
@@ -82,17 +75,17 @@ class LiveFeedViewModel @Inject constructor(
     }
 
 
-    private fun stopViewing() {
+    internal fun stopViewing(context: Context) {
         if (userId.isEmpty()) return
         _connectionStatus.value = "Disconnected"
         _isViewing.value = false
 
         // Update the status to "false" (disconnected) in the signaling node under userId
         database.getReference("NeoSynk").child("status").setValue(false)
-
+      webRtcManager?.stopstreaming()
         // Cleanup the WebRTC manager
-        webRtcManager?.cleanup()
-        webRtcManager = null
+        //webRtcManager?.cleanup()
+      //  webRtcManager = null
     }
 
 
@@ -104,8 +97,9 @@ class LiveFeedViewModel @Inject constructor(
         super.onCleared()
         // Clean up listeners and WebRTC
         statusListener?.let {
-            database.getReference("status").removeEventListener(it)
+            database.getReference("NeoSynk").child("status").removeEventListener(it)
+
         }
-        stopViewing()
+        stopViewing(context)
     }
 }

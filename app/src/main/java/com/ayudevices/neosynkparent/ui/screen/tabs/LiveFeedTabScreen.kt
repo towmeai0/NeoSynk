@@ -16,10 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.viewmodel.CustomSurfaceViewRenderer
 import com.ayudevices.neosynkparent.viewmodel.LiveFeedViewModel
-import com.ayudevices.neosynkparent.viewmodel.WebRTCManager
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+
 
 private const val TAG = "LiveFeedTab"
 
@@ -27,7 +24,6 @@ private const val TAG = "LiveFeedTab"
 fun LiveTab(
     navController: NavController,
     viewModel: LiveFeedViewModel = hiltViewModel()
-
 ) {
     val isViewing by viewModel.isViewing.collectAsState()
     val connectionStatus by viewModel.connectionStatus.collectAsState()
@@ -36,31 +32,16 @@ fun LiveTab(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(
-            onClick = { viewModel.toggleViewing() },
-            enabled = connectionStatus != "Connecting..."
-        ) {
-            Text(if (isViewing) "Stop Viewing" else "Start Viewing")
-        }
-
-        Text(
-            text = connectionStatus,
-            color = when (connectionStatus) {
-                "Connected" -> Color.Green
-                "Connecting...", "Connecting" -> Color.Yellow
-                else -> Color.Red
-            }
-        )
-
+        // 🔲 Video feed takes up remaining space
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(9f / 16f)
-                .border(2.dp, Color.Gray)
+                .weight(1f)
+                .border(2.dp, Color.Gray),
+            contentAlignment = Alignment.Center
         ) {
             if (isViewing) {
                 AndroidView(
@@ -69,12 +50,42 @@ fun LiveTab(
                             viewModel.setRemoteRenderer(this)
                         }
                     },
-                    modifier = Modifier.fillMaxSize(),
-
+                    modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Text("Feed Inactive", modifier = Modifier.align(Alignment.Center))
+                Text("Feed Inactive")
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 📶 Connection Status
+        Text(
+            text = connectionStatus,
+            color = when (connectionStatus) {
+                "Connected" -> Color.Green
+                "Connecting..." -> Color.Yellow
+                else -> Color.Red
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // 🎬 Toggle Button
+        Button(
+            onClick = {
+                if (isViewing) viewModel.stopViewing(context)
+                else viewModel.startViewing(context)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isViewing) Color.Red else Color.Green,
+                contentColor = Color.White
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        ) {
+            Text(if (isViewing) "Stop Viewing" else "Start Viewing")
         }
     }
 }
