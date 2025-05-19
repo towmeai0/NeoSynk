@@ -26,7 +26,6 @@ class TokenSender @Inject constructor(
     private val authRepository: AuthRepository
 ) {
     fun sendFcmTokenToServer(token: String) {
-
         val request = FcmTokenRequest(
             userId = "parent_001",
             fcmToken = token,

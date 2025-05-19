@@ -1,6 +1,5 @@
 package com.ayudevices.neosynkparent.ui.screen.tabs
 
-import android.content.Context
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -10,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.firebase.database.*
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -74,8 +72,8 @@ fun LiveTab(
         // 🎬 Toggle Button
         Button(
             onClick = {
-                if (isViewing) viewModel.stopViewing(context)
-                else viewModel.startViewing(context)
+                if (isViewing) viewModel.stopViewing()
+                else viewModel.startViewing()
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isViewing) Color.Red else Color.Green,

@@ -109,8 +109,8 @@ fun LoginScreen(
 }
 
 fun onLoginSuccess(navController: NavHostController) {
-    navController.navigate(Screen.Profile.route) {
-        popUpTo(Screen.Login.route) { inclusive = true }
+    navController.navigate(Screen.Home.route) {
+        popUpTo(Screen.Home.route) { inclusive = true }
     }
 
 }

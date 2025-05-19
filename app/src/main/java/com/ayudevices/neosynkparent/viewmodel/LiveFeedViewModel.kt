@@ -38,6 +38,7 @@ class LiveFeedViewModel @Inject constructor(
     init {
         if (userId.isNotEmpty()) {
             listenToStatus()
+            database.getReference("NeoSynk").child("status").setValue(false)
         }
     }
     private fun listenToStatus() {
@@ -55,37 +56,48 @@ class LiveFeedViewModel @Inject constructor(
         statusRef.addValueEventListener(statusListener as ValueEventListener)
     }
 
+    /* fun toggleViewing() {
+         if (_isViewing.value) {
+             stopViewing(context)
+         } else {
+             startViewing(context)
+         }
+     }*/
 
-
-    internal fun startViewing(context: Context) {
+    internal fun startViewing() {
         if (userId.isEmpty()) return
+
         _connectionStatus.value = "Connecting..."
         _isViewing.value = true
 
-        // Set the status to "true" (connected) in the signaling node under userId
+        val signalingRoot = database.getReference("NeoSynk").child("signaling")
+        signalingRoot.child("child001").removeValue()
+        signalingRoot.child("parent001").removeValue()
+
         database.getReference("NeoSynk").child("status").setValue(true)
 
-        // Set offer data for signaling if needed
         if (webRtcManager == null) {
             webRtcManager = WebRTCManager(
                 context = context,
-                database.getReference("NeoSynk").child("signaling")
+                signalingRef = signalingRoot
             )
         }
+        webRtcManager?.startStreaming()
     }
 
-
-    internal fun stopViewing(context: Context) {
+    internal fun stopViewing() {
         if (userId.isEmpty()) return
+
         _connectionStatus.value = "Disconnected"
         _isViewing.value = false
 
-        // Update the status to "false" (disconnected) in the signaling node under userId
         database.getReference("NeoSynk").child("status").setValue(false)
-      webRtcManager?.stopstreaming()
-        // Cleanup the WebRTC manager
-        //webRtcManager?.cleanup()
-      //  webRtcManager = null
+        webRtcManager?.stopStreaming()
+
+        // Clean up signaling data
+        val signalingRoot = database.getReference("NeoSynk").child("signaling")
+        signalingRoot.child("child001").removeValue()
+        signalingRoot.child("parent001").removeValue()
     }
 
 
@@ -98,8 +110,9 @@ class LiveFeedViewModel @Inject constructor(
         // Clean up listeners and WebRTC
         statusListener?.let {
             database.getReference("NeoSynk").child("status").removeEventListener(it)
-
         }
-        stopViewing(context)
+        stopViewing()
+        webRtcManager?.cleanup()
+        webRtcManager = null
     }
 }
