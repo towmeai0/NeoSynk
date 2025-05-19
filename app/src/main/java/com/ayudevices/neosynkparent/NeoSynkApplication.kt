@@ -10,8 +10,7 @@ import javax.inject.Inject
 
 
 @HiltAndroidApp
-class NeoSynkApplication: Application(
-){
+class NeoSynkApplication: Application(){
     @Inject lateinit var tokenSender: TokenSender
     override fun onCreate() {
         super.onCreate()

@@ -21,17 +21,19 @@ class WebRTCManager(
 {
     private val executor = Executors.newSingleThreadExecutor()
     private lateinit var peerConnectionFactory: PeerConnectionFactory
-    private lateinit var peerConnection: PeerConnection
+    private var peerConnection: PeerConnection? = null
     private var remoteRenderer: SurfaceViewRenderer? = null
 
     private var eglBase: EglBase = EglBase.create()
+    private val track: VideoTrack? = null
+
+    // Keep references to listeners so we can remove them when stopping
+    private var offerListener: ValueEventListener? = null
+    private var iceCandidateListener: ChildEventListener? = null
 
     init {
         executor.execute {
             initializePeerConnectionFactory()
-            initializePeerConnection()
-            listenForOffer()
-            listenForIceCandidates()
         }
     }
 
@@ -52,6 +54,10 @@ class WebRTCManager(
     }
 
     private fun initializePeerConnection() {
+        // Close existing connection if any
+        peerConnection?.close()
+        peerConnection?.dispose()
+
         val iceServers = listOf(
             PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
         )
@@ -95,7 +101,7 @@ class WebRTCManager(
             override fun onRenegotiationNeeded() {}
             override fun onAddStream(stream: MediaStream?) {}
             override fun onTrack(transceiver: RtpTransceiver?) {}
-        })!!
+        })
     }
 
     // This method is now being used to set the renderer for remote video
@@ -106,38 +112,36 @@ class WebRTCManager(
     }
 
     private fun listenForOffer() {
-        signalingRef.child("child001").child("offer")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val offerData = snapshot.getValue(SignalingMessage::class.java)
-                    if (offerData != null && offerData.sdp != null && offerData.type != null) {
-                        val offer = SessionDescription(
-                            SessionDescription.Type.fromCanonicalForm(offerData.type!!),
-                            offerData.sdp!!
-                        )
-                        Log.d("WebRTC", "Offer received: $offer")
+        offerListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val offerData = snapshot.getValue(SignalingMessage::class.java)
+                if (offerData != null && offerData.sdp != null && offerData.type != null) {
+                    val offer = SessionDescription(
+                        SessionDescription.Type.fromCanonicalForm(offerData.type!!),
+                        offerData.sdp!!
+                    )
+                    Log.d("WebRTC", "Offer received: $offer")
 
-                        if (::peerConnection.isInitialized) {
-                            peerConnection.setRemoteDescription(object : SdpObserver {
-                                override fun onSetSuccess() {
-                                    createAndSendAnswer()
-                                }
-
-                                override fun onSetFailure(error: String?) {
-                                    Log.e("WebRTC", "Failed to set remote description: $error")
-                                }
-
-                                override fun onCreateSuccess(p0: SessionDescription?) {}
-                                override fun onCreateFailure(p0: String?) {}
-                            }, offer)
+                    peerConnection?.setRemoteDescription(object : SdpObserver {
+                        override fun onSetSuccess() {
+                            createAndSendAnswer()
                         }
-                    }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("WebRTC", "Offer listener cancelled: ${error.message}")
+                        override fun onSetFailure(error: String?) {
+                            Log.e("WebRTC", "Failed to set remote description: $error")
+                        }
+
+                        override fun onCreateSuccess(p0: SessionDescription?) {}
+                        override fun onCreateFailure(p0: String?) {}
+                    }, offer)
                 }
-            })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("WebRTC", "Offer listener cancelled: ${error.message}")
+            }
+        }
+        signalingRef.child("child001").child("offer").addValueEventListener(offerListener!!)
     }
 
 
@@ -147,9 +151,9 @@ class WebRTCManager(
             mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
         }
 
-        peerConnection.createAnswer(object : SdpObserver {
+        peerConnection?.createAnswer(object : SdpObserver {
             override fun onCreateSuccess(sessionDescription: SessionDescription) {
-                peerConnection.setLocalDescription(object : SdpObserver {
+                peerConnection?.setLocalDescription(object : SdpObserver {
                     override fun onSetSuccess() {
                         signalingRef.child("parent001").child("answer")
                             .setValue(sessionDescription)
@@ -185,41 +189,75 @@ class WebRTCManager(
     }
 
     private fun listenForIceCandidates() {
-        signalingRef.child("child001").child("iceCandidates")
-            .addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                    val candidateMap = snapshot.getValue(object : GenericTypeIndicator<Map<String, Any>>() {}) // Use GenericTypeIndicator here
-                    if (candidateMap != null) {
-                        val sdpMid = candidateMap["sdpMid"] as? String
-                        val sdpMLineIndex = (candidateMap["sdpMLineIndex"] as? Long)?.toInt()
-                        val sdp = candidateMap["candidate"] as? String
+        iceCandidateListener = object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val candidateMap = snapshot.getValue(object : GenericTypeIndicator<Map<String, Any>>() {}) // Use GenericTypeIndicator here
+                if (candidateMap != null) {
+                    val sdpMid = candidateMap["sdpMid"] as? String
+                    val sdpMLineIndex = (candidateMap["sdpMLineIndex"] as? Long)?.toInt()
+                    val sdp = candidateMap["candidate"] as? String
 
-                        if (sdpMid != null && sdpMLineIndex != null && sdp != null) {
-                            val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdp)
-                            Log.d("WebRTC", "ICE Candidate received: $candidate")
-                            if (::peerConnection.isInitialized) {
-                                peerConnection.addIceCandidate(candidate)
-                            }
-                        }
+                    if (sdpMid != null && sdpMLineIndex != null && sdp != null) {
+                        val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdp)
+                        Log.d("WebRTC", "ICE Candidate received: $candidate")
+                        peerConnection?.addIceCandidate(candidate)
                     }
                 }
+            }
 
-                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-                override fun onChildRemoved(snapshot: DataSnapshot) {}
-                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("WebRTC", "ICE Candidate listener cancelled: ${error.message}")
-                }
-            })
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("WebRTC", "ICE Candidate listener cancelled: ${error.message}")
+            }
+        }
+        signalingRef.child("child001").child("iceCandidates").addChildEventListener(iceCandidateListener!!)
     }
 
 
     fun cleanup() {
         executor.execute {
-            peerConnection.close()
-            peerConnection.dispose()
+            // Remove Firebase listeners
+            offerListener?.let {
+                signalingRef.child("child001").child("offer").removeEventListener(it)
+            }
+            iceCandidateListener?.let {
+                signalingRef.child("child001").child("iceCandidates").removeEventListener(it)
+            }
+
+            peerConnection?.close()
+            peerConnection?.dispose()
+            peerConnection = null
             peerConnectionFactory.dispose()
             remoteRenderer?.release() // Release the remote renderer resources
+        }
+    }
+
+    fun stopStreaming() {
+        executor.execute {
+            // Remove Firebase listeners
+            offerListener?.let {
+                signalingRef.child("child001").child("offer").removeEventListener(it)
+                offerListener = null
+            }
+            iceCandidateListener?.let {
+                signalingRef.child("child001").child("iceCandidates").removeEventListener(it)
+                iceCandidateListener = null
+            }
+
+            track?.removeSink(remoteRenderer)
+            peerConnection?.close()
+            peerConnection?.dispose()
+            peerConnection = null
+        }
+    }
+
+    fun startStreaming() {
+        executor.execute {
+            initializePeerConnection()
+            listenForOffer()
+            listenForIceCandidates()
         }
     }
 }

@@ -155,9 +155,11 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                 Button(onClick = {
                     showKeyboard = !showKeyboard
                     if (showKeyboard) {
-                        speechRecognizer.stopListening()  // Pause voice input when keyboard opens
+                        speechRecognizer.stopListening()
                     } else {
-                        speechRecognizer.startListening(recognizerIntent)  // Resume voice input
+                        if (userInput.text.isEmpty()) {
+                            speechRecognizer.startListening(recognizerIntent)
+                        }
                     }
                 }) {
                     Text("Keyboard", color = Color.White)
@@ -222,7 +224,19 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             ) {
                 TextField(
                     value = userInput,
-                    onValueChange = { userInput = it },
+                    onValueChange = {
+                        userInput = it
+
+                        // Stop Speech Recognizer if user is typing
+                        if (it.text.isNotEmpty()) {
+                            speechRecognizer.stopListening()
+                        } else {
+                            // Resume Speech Recognizer if text is cleared and keyboard is hidden
+                            if (!showKeyboard) {
+                                speechRecognizer.startListening(recognizerIntent)
+                            }
+                        }
+                    },
                     placeholder = { Text("Type a message...") },
                     modifier = Modifier.weight(1f),
                     colors = TextFieldDefaults.colors(
@@ -238,14 +252,18 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                         viewModel.onSendMessage(userInput.text)
                         userInput = TextFieldValue("")
 
-                        // Restart listening after sending a message
-                        speechRecognizer.startListening(recognizerIntent)
+                        // Restart listening after sending a message if keyboard is hidden
+                        if (!showKeyboard) {
+                            speechRecognizer.startListening(recognizerIntent)
+                        }
                     }
                 }) {
                     Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
                 }
             }
         }
+
+
     }
 }
 
