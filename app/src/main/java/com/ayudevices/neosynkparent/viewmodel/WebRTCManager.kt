@@ -9,6 +9,8 @@ import org.webrtc.*
 import java.util.concurrent.Executors
 import org.webrtc.PeerConnection
 
+
+
 data class SignalingMessage(
     val type: String? = null,
     val sdp: String? = null
@@ -141,7 +143,7 @@ class WebRTCManager(
                 Log.e("WebRTC", "Offer listener cancelled: ${error.message}")
             }
         }
-        signalingRef.child("child001").child("offer").addValueEventListener(offerListener!!)
+        signalingRef.child("child").child("offer").addValueEventListener(offerListener!!)
     }
 
 
@@ -155,7 +157,7 @@ class WebRTCManager(
             override fun onCreateSuccess(sessionDescription: SessionDescription) {
                 peerConnection?.setLocalDescription(object : SdpObserver {
                     override fun onSetSuccess() {
-                        signalingRef.child("parent001").child("answer")
+                        signalingRef.child("parent").child("answer")
                             .setValue(sessionDescription)
                     }
 
@@ -185,7 +187,7 @@ class WebRTCManager(
             "sdpMLineIndex" to candidate.sdpMLineIndex,
             "candidate" to candidate.sdp
         )
-        signalingRef.child("parent001").child("iceCandidates").push().setValue(candidateMap)
+        signalingRef.child("parent").child("iceCandidates").push().setValue(candidateMap)
     }
 
     private fun listenForIceCandidates() {
@@ -212,7 +214,7 @@ class WebRTCManager(
                 Log.e("WebRTC", "ICE Candidate listener cancelled: ${error.message}")
             }
         }
-        signalingRef.child("child001").child("iceCandidates").addChildEventListener(iceCandidateListener!!)
+        signalingRef.child("child").child("iceCandidates").addChildEventListener(iceCandidateListener!!)
     }
 
 
@@ -220,17 +222,17 @@ class WebRTCManager(
         executor.execute {
             // Remove Firebase listeners
             offerListener?.let {
-                signalingRef.child("child001").child("offer").removeEventListener(it)
+                signalingRef.child("child").child("offer").removeEventListener(it)
             }
             iceCandidateListener?.let {
-                signalingRef.child("child001").child("iceCandidates").removeEventListener(it)
+                signalingRef.child("child").child("iceCandidates").removeEventListener(it)
             }
 
             peerConnection?.close()
             peerConnection?.dispose()
             peerConnection = null
             peerConnectionFactory.dispose()
-            remoteRenderer?.release() // Release the remote renderer resources
+            //remoteRenderer?.release() // Release the remote renderer resources
         }
     }
 
@@ -238,11 +240,11 @@ class WebRTCManager(
         executor.execute {
             // Remove Firebase listeners
             offerListener?.let {
-                signalingRef.child("child001").child("offer").removeEventListener(it)
+                signalingRef.child("parent").child("answer").removeEventListener(it)
                 offerListener = null
             }
             iceCandidateListener?.let {
-                signalingRef.child("child001").child("iceCandidates").removeEventListener(it)
+                signalingRef.child("parent").child("iceCandidates").removeEventListener(it)
                 iceCandidateListener = null
             }
 
@@ -254,6 +256,7 @@ class WebRTCManager(
     }
 
     fun startStreaming() {
+        Log.d("STREAM","START STREAMING CALLED")
         executor.execute {
             initializePeerConnection()
             listenForOffer()

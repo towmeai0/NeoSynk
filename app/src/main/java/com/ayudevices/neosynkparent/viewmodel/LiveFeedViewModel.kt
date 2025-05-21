@@ -1,6 +1,7 @@
 package com.ayudevices.neosynkparent.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import org.webrtc.SurfaceViewRenderer
 
 @HiltViewModel
 class LiveFeedViewModel @Inject constructor(
@@ -28,6 +30,8 @@ class LiveFeedViewModel @Inject constructor(
     val isViewing: StateFlow<Boolean> = _isViewing
 
     private var webRtcManager: WebRTCManager? = null
+    private var surfaceViewRenderer: SurfaceViewRenderer? = null
+
 
     private var statusListener: ValueEventListener? = null
 
@@ -35,14 +39,25 @@ class LiveFeedViewModel @Inject constructor(
 
     private val signalingRef = database.getReference("NeoSynk").child("signaling")
 
+    // Adding state to track if we were viewing before pause
+    var wasViewingBeforePause: Boolean = false
+
+    // Flag to ensure we only add the lifecycle observer once
+    var hasLifecycleObserver: Boolean = false
+
+
     init {
         if (userId.isNotEmpty()) {
             listenToStatus()
-            database.getReference("NeoSynk").child("status").setValue(false)
+            val signalingRoot = database.getReference("NeoSynk").child("signaling").child(userId)
+            signalingRoot.child("status").setValue(false)
+            //database.getReference("NeoSynk").child("status").setValue(false)
+            startViewing()
         }
     }
     private fun listenToStatus() {
-        val statusRef = database.getReference("NeoSynk").child("status")
+        //val statusRef = database.getReference("NeoSynk").child("status")
+        val statusRef = database.getReference("NeoSynk").child("signaling").child(userId).child("status")
         statusListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val status = snapshot.getValue(Boolean::class.java) ?: false
@@ -56,60 +71,76 @@ class LiveFeedViewModel @Inject constructor(
         statusRef.addValueEventListener(statusListener as ValueEventListener)
     }
 
-    /* fun toggleViewing() {
-         if (_isViewing.value) {
-             stopViewing(context)
-         } else {
-             startViewing(context)
-         }
-     }*/
+
 
     internal fun startViewing() {
+        Log.d("LIVE Feed", "Function called")
         if (userId.isEmpty()) return
 
         _connectionStatus.value = "Connecting..."
         _isViewing.value = true
 
-        val signalingRoot = database.getReference("NeoSynk").child("signaling")
-        signalingRoot.child("child001").removeValue()
-        signalingRoot.child("parent001").removeValue()
+        val signalingRoot = database.getReference("NeoSynk").child("signaling").child(userId)
+        signalingRoot.child("child").removeValue()
+        signalingRoot.child("parent").removeValue()
 
-        database.getReference("NeoSynk").child("status").setValue(true)
+        signalingRoot.child("status").setValue(true)
 
-        if (webRtcManager == null) {
-            webRtcManager = WebRTCManager(
-                context = context,
-                signalingRef = signalingRoot
-            )
-        }
+        //database.getReference("NeoSynk").child("status").setValue(true)
+
+        // Create a new WebRTCManager instance each time to ensure proper initialization
+        webRtcManager?.cleanup() // Properly clean up the previous instance
+        webRtcManager = WebRTCManager(
+            context = context,
+            signalingRef = signalingRoot
+        )
+
+        // Set the remote renderer again if it was previously set
+        //remoteVideoView?.let { webRtcManager?.setRemoteRenderer(it) }
+
         webRtcManager?.startStreaming()
     }
 
     internal fun stopViewing() {
+        Log.d("LIVE Feed", "STOP called")
         if (userId.isEmpty()) return
 
         _connectionStatus.value = "Disconnected"
         _isViewing.value = false
 
-        database.getReference("NeoSynk").child("status").setValue(false)
+        // Call the stopStreaming method to remove listeners
         webRtcManager?.stopStreaming()
 
-        // Clean up signaling data
-        val signalingRoot = database.getReference("NeoSynk").child("signaling")
-        signalingRoot.child("child001").removeValue()
-        signalingRoot.child("parent001").removeValue()
+        //database.getReference("NeoSynk").child("status").setValue(false)
+        val signalingRoot = database.getReference("NeoSynk").child("signaling").child(userId)
+        signalingRoot.child("status").setValue(false)
+
+        signalingRoot.child("child").removeValue()
+        signalingRoot.child("parent").removeValue()
+
+        // Clean up completely - we'll recreate when viewing starts again
+        webRtcManager?.cleanup()
+        webRtcManager = null
+
+        // Also cleanup the renderer reference
+        surfaceViewRenderer = null
     }
 
 
-    fun setRemoteRenderer(renderer: CustomSurfaceViewRenderer) {
+
+    fun setRemoteRenderer(renderer: SurfaceViewRenderer) {
+        Log.d("LIVE Feed", "Setting remote renderer")
+        surfaceViewRenderer = renderer
         webRtcManager?.setRemoteRenderer(renderer)
     }
 
     override fun onCleared() {
         super.onCleared()
+        Log.d("ON CLEARED","On Cleared Called")
         // Clean up listeners and WebRTC
         statusListener?.let {
-            database.getReference("NeoSynk").child("status").removeEventListener(it)
+            database.getReference("NeoSynk").child("signaling").child(userId).child("status").removeEventListener(it)
+            //database.getReference("NeoSynk").child("status").removeEventListener(it)
         }
         stopViewing()
         webRtcManager?.cleanup()
