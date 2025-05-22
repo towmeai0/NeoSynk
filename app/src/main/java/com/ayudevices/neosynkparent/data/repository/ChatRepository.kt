@@ -10,10 +10,7 @@ import com.ayudevices.neosynkparent.data.model.ChatRequest
 import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
 
 class ChatRepository @Inject constructor(
@@ -37,8 +34,8 @@ class ChatRepository @Inject constructor(
                 when (message.lowercase()) {
                     "yes" -> {
                         tokenSender.requestVitals(
-                            parentId = "parent_001",
-                            childId = "child_001",
+                            parentId = userId,
+                            childId = "child$userId",
                             reqVitals = listOf(pendingIntent.vitalType ?: return)
                         )
                         chatDao.insertMessage(
@@ -90,7 +87,6 @@ class ChatRepository @Inject constructor(
                 )
             }
 
-            // Handle vital requests
             when (intent) {
                 "weight_vital_request", "height_vital_request", "heart_rate_vital_request", "spo2_vital_request" -> {
                     val vitalType = when (intent) {

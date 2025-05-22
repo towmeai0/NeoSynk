@@ -67,7 +67,10 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
     val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
     val recognizerIntent = remember {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
         }
     }
@@ -84,7 +87,11 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
 
     // Start listening when screen loads
     LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             if (!showKeyboard) startListening(speechRecognizer, recognizerIntent)
         } else {
             launcher.launch(Manifest.permission.RECORD_AUDIO)
@@ -120,6 +127,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                 }
                 if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
             }
+
             override fun onError(error: Int) {
                 if (!showKeyboard) speechRecognizer.startListening(recognizerIntent)
             }
@@ -215,6 +223,35 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
         }
 
         if (showKeyboard) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val suggestions = listOf("Generate Report", "Baby Health", "SOS")
+                    suggestions.forEach { suggestion ->
+                        Button(
+                            onClick = {
+                                viewModel.onSendMessage(suggestion)
+                                userInput = TextFieldValue("")
+                                if (!showKeyboard) {
+                                    speechRecognizer.startListening(recognizerIntent)
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(2.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        ) {
+                            Text(suggestion, color = Color.White, fontSize = 14.sp, maxLines = 1)
+                        }
+                    }
+                }
+
+            }
+            // Original TextField and Send Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -226,12 +263,9 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                     value = userInput,
                     onValueChange = {
                         userInput = it
-
-                        // Stop Speech Recognizer if user is typing
                         if (it.text.isNotEmpty()) {
                             speechRecognizer.stopListening()
                         } else {
-                            // Resume Speech Recognizer if text is cleared and keyboard is hidden
                             if (!showKeyboard) {
                                 speechRecognizer.startListening(recognizerIntent)
                             }
@@ -251,19 +285,19 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                     if (userInput.text.isNotBlank()) {
                         viewModel.onSendMessage(userInput.text)
                         userInput = TextFieldValue("")
-
-                        // Restart listening after sending a message if keyboard is hidden
                         if (!showKeyboard) {
                             speechRecognizer.startListening(recognizerIntent)
                         }
                     }
                 }) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
+                    Icon(
+                        Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Send",
+                        tint = Color.White
+                    )
                 }
             }
         }
-
-
     }
 }
 

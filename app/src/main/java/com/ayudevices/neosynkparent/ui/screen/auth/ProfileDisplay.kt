@@ -27,8 +27,7 @@ fun ProfileDisplay(navController: NavController) {
     var gender by remember { mutableStateOf("") }
 
     val userId = FirebaseAuth.getInstance().currentUser?.uid
-    val databaseRef = FirebaseDatabase.getInstance().getReference("NeoSynk")
-
+    val databaseRef = FirebaseDatabase.getInstance().getReference("NeoSynk").child("user")
 
     LaunchedEffect(userId) {
         userId?.let {

@@ -23,11 +23,8 @@ class WebRTCManager(
     private lateinit var peerConnectionFactory: PeerConnectionFactory
     private var peerConnection: PeerConnection? = null
     private var remoteRenderer: SurfaceViewRenderer? = null
-
     private var eglBase: EglBase = EglBase.create()
     private val track: VideoTrack? = null
-
-    // Keep references to listeners so we can remove them when stopping
     private var offerListener: ValueEventListener? = null
     private var iceCandidateListener: ChildEventListener? = null
 
@@ -104,7 +101,6 @@ class WebRTCManager(
         })
     }
 
-    // This method is now being used to set the renderer for remote video
     fun setRemoteRenderer(renderer: SurfaceViewRenderer) {
         remoteRenderer = renderer
         renderer.init(eglBase.eglBaseContext, null)
@@ -143,7 +139,6 @@ class WebRTCManager(
         }
         signalingRef.child("child001").child("offer").addValueEventListener(offerListener!!)
     }
-
 
     private fun createAndSendAnswer() {
         val mediaConstraints = MediaConstraints().apply {
@@ -218,7 +213,6 @@ class WebRTCManager(
 
     fun cleanup() {
         executor.execute {
-            // Remove Firebase listeners
             offerListener?.let {
                 signalingRef.child("child001").child("offer").removeEventListener(it)
             }
@@ -230,7 +224,7 @@ class WebRTCManager(
             peerConnection?.dispose()
             peerConnection = null
             peerConnectionFactory.dispose()
-            remoteRenderer?.release() // Release the remote renderer resources
+            remoteRenderer?.release()
         }
     }
 

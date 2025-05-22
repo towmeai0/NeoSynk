@@ -19,6 +19,7 @@ sealed class Screen(val route: String) {
     object HeartRateDetailsScreen : Screen("HeartRateDetailsScreen")
     object VitalsSPO2Screen :Screen ("VitalsSPO2Screen")
     object WeightDetailsScreen :Screen ("WeightDetailsScreen")
+    object  MilestoneQues: Screen(" MilestoneQues")
 
     companion object {
         val bottomScreens = listOf(

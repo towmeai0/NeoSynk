@@ -24,12 +24,12 @@ class MilestoneViewModel @Inject constructor(
     private val _overallProgress = MutableStateFlow(0)
     val overallProgress: StateFlow<Int> = _overallProgress
 
-
     private val _motorProgress = MutableStateFlow(0)
     val motorProgress: StateFlow<Int> = _motorProgress
 
     private val _sensoryProgress = MutableStateFlow(0)
     val sensoryProgress: StateFlow<Int> = _sensoryProgress
+
 
     private val _communicationProgress = MutableStateFlow(0)
     val communicationProgress: StateFlow<Int> = _communicationProgress

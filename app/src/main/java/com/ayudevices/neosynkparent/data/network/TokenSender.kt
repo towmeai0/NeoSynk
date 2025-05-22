@@ -2,7 +2,6 @@ package com.ayudevices.neosynkparent.data.network
 
 import android.content.Context
 import android.util.Log
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
 import com.ayudevices.neosynkparent.data.model.ChatRequest
@@ -10,8 +9,6 @@ import com.ayudevices.neosynkparent.data.model.DeviceBodyRequest
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
-import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,11 +23,19 @@ class TokenSender @Inject constructor(
     private val authRepository: AuthRepository
 ) {
     fun sendFcmTokenToServer(token: String) {
-        val request = FcmTokenRequest(
+      /*  val request = FcmTokenRequest(
             userId = "parent_001",
             fcmToken = token,
             appType = "parent"
+        )*/
+
+      val userId = authRepository.getCurrentUserId().toString()
+        val request = FcmTokenRequest(
+            userId = userId,
+            fcmToken = token,
+            appType = "parent"
         )
+
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -46,7 +51,9 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestVitals(parentId: String = "parent_001", childId: String = "child_001", reqVitals: List<String>) {
+  // fun requestVitals(parentId: String = "parent_001", childId: String = "child_001", reqVitals: List<String>)
+     fun requestVitals(parentId: String, childId: String, reqVitals: List<String>)
+    {
         Log.d("Vitals", "Vital type: ${reqVitals}")
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {
@@ -63,7 +70,8 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestDevice(parentId: String, childId: String = "child_001", reqVitals: List<String>) {
+  //  fun requestDevice(parentId: String, childId: String = "child_001", reqVitals: List<String>){
+    fun requestDevice(parentId: String, childId: String, reqVitals: List<String>){
         Log.d("Device", "Device type: ${reqVitals}")
         val request = DeviceBodyRequest(parentId, childId, reqVitals)
         CoroutineScope(Dispatchers.IO).launch {

@@ -20,7 +20,6 @@ import androidx.navigation.compose.rememberNavController
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.CardBackground
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
-import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun OnboardingScreen(

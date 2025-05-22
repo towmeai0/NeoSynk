@@ -7,7 +7,6 @@ import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlin.String
-import kotlin.text.get
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {

@@ -17,7 +17,6 @@ class LiveFeedViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel()
 {
-
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
 
@@ -56,13 +55,6 @@ class LiveFeedViewModel @Inject constructor(
         statusRef.addValueEventListener(statusListener as ValueEventListener)
     }
 
-    /* fun toggleViewing() {
-         if (_isViewing.value) {
-             stopViewing(context)
-         } else {
-             startViewing(context)
-         }
-     }*/
 
     internal fun startViewing() {
         if (userId.isEmpty()) return
@@ -94,12 +86,10 @@ class LiveFeedViewModel @Inject constructor(
         database.getReference("NeoSynk").child("status").setValue(false)
         webRtcManager?.stopStreaming()
 
-        // Clean up signaling data
         val signalingRoot = database.getReference("NeoSynk").child("signaling")
         signalingRoot.child("child001").removeValue()
         signalingRoot.child("parent001").removeValue()
     }
-
 
     fun setRemoteRenderer(renderer: CustomSurfaceViewRenderer) {
         webRtcManager?.setRemoteRenderer(renderer)
@@ -107,7 +97,6 @@ class LiveFeedViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        // Clean up listeners and WebRTC
         statusListener?.let {
             database.getReference("NeoSynk").child("status").removeEventListener(it)
         }
