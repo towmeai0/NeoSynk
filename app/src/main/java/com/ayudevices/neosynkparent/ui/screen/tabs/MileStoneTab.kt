@@ -3,6 +3,8 @@ package com.ayudevices.neosynkparent.ui.screen.tabs
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -43,17 +45,14 @@ fun MilestonesTab(navController: NavController, milestoneViewModel: MilestoneVie
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Overall Progress",
-                        color = LightGrayText,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Progress Circle
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.size(120.dp)
@@ -82,42 +81,60 @@ fun MilestonesTab(navController: NavController, milestoneViewModel: MilestoneVie
                             )
                         }
 
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(start = 8.dp)
+                        // Trophy Icon with same size as progress circle
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(darkBackground),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                MilestoneStatCard(
-                                    title = "Motor",
-                                    progress = "$motorProgress%",
-                                    modifier = Modifier.clickable {
-                                        navController.navigate(" MilestoneQues")
-                                    }
-                                )
-                                MilestoneStatCard(
-                                    title = "Sensory",
-                                    progress = "$sensoryProgress%",
-                                    modifier = Modifier.clickable {
-                                        navController.navigate(" MilestoneQues")
-                                    }
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                MilestoneStatCard(
-                                    title = "Communication",
-                                    progress = "$communicationProgress%",
-                                    modifier = Modifier.clickable {
-                                        navController.navigate(" MilestoneQues")
-                                    }
-                                )
-                                MilestoneStatCard(
-                                    title = "Feeding",
-                                    progress = "$feedingProgress%",
-                                    modifier = Modifier.clickable {
-                                        navController.navigate(" MilestoneQues")
-                                    }
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = "Trophy Icon",
+                                tint = WarmOrange,
+                                modifier = Modifier.size(150.dp) // Adjust icon size inside the box
+                            )
+                        }
+                    }
+                }
+
+                    // Spacer between progress and stat cards
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Two rows of stat cards
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            MilestoneStatCard(
+                                title = "Motor",
+                                progress = "$motorProgress%",
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { navController.navigate(" MilestoneQues") }
+                            )
+                            MilestoneStatCard(
+                                title = "Sensory",
+                                progress = "$sensoryProgress%",
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { navController.navigate(" MilestoneQues") }
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            MilestoneStatCard(
+                                title = "Communication",
+                                progress = "$communicationProgress%",
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { navController.navigate(" MilestoneQues") }
+                            )
+                            MilestoneStatCard(
+                                title = "Feeding",
+                                progress = "$feedingProgress%",
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { navController.navigate(" MilestoneQues") }
+                            )
                         }
                     }
                 }
@@ -126,7 +143,7 @@ fun MilestonesTab(navController: NavController, milestoneViewModel: MilestoneVie
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
-}
+
 
 @Composable
 fun MilestoneStatCard(
@@ -136,8 +153,7 @@ fun MilestoneStatCard(
 ) {
     Card(
         modifier = modifier
-            .width(100.dp)
-            .height(50.dp),
+            .height(60.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = darkBackground),
         border = BorderStroke(2.dp, WarmOrange)
@@ -156,7 +172,7 @@ fun MilestoneStatCard(
                 text = progress,
                 color = WhiteText,
                 fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
+                fontSize = 20.sp
             )
         }
     }
