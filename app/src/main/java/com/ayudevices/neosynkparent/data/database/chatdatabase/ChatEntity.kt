@@ -2,13 +2,16 @@ package com.ayudevices.neosynkparent.data.database.chatdatabase
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
+
 
 @Entity(tableName = "chat_messages")
+@TypeConverters(OptionsTypeConverter::class)
 data class ChatEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val message: String,
-    val timestamp: Long = System.currentTimeMillis(),
     val sender: String,
-    val options: List<String>? = null
+    val timestamp: Long = System.currentTimeMillis(),
+    val options: List<String> = emptyList(), // For Yes/No/Skip buttons
+    val isAnswered: Boolean = false // Flag to track if options have been responded to
 )

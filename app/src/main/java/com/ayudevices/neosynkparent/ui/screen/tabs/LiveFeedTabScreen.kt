@@ -1,3 +1,4 @@
+
 package com.ayudevices.neosynkparent.ui.screen.tabs
 
 import androidx.compose.foundation.border
@@ -7,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.Color
@@ -14,7 +16,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.viewmodel.CustomSurfaceViewRenderer
 import com.ayudevices.neosynkparent.viewmodel.LiveFeedViewModel
-
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import android.util.Log
 
 private const val TAG = "LiveFeedTab"
 
@@ -26,6 +30,41 @@ fun LiveTab(
     val isViewing by viewModel.isViewing.collectAsState()
     val connectionStatus by viewModel.connectionStatus.collectAsState()
     val context = LocalContext.current
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    // Handle lifecycle events - stop when leaving, auto-restart when returning
+    var wasViewingBeforePause by remember { mutableStateOf(false) }
+
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    Log.d(TAG, "LiveTab paused - stopping stream")
+                    // Remember current viewing state before stopping
+                    wasViewingBeforePause = viewModel.isViewing.value
+
+                    // Stop viewing when tab is no longer visible
+                    if (viewModel.isViewing.value) {
+                        viewModel.stopViewing()
+                    }
+                }
+                Lifecycle.Event.ON_RESUME -> {
+                    Log.d(TAG, "LiveTab resumed $wasViewingBeforePause")
+                    // Auto-restart if we were viewing before
+                    if (wasViewingBeforePause) {
+                        Log.d(TAG, "Auto-restarting stream")
+                        viewModel.startViewing()
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+        }
+    }
 
     Column(
         modifier = Modifier

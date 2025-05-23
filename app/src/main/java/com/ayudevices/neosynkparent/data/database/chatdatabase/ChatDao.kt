@@ -20,4 +20,10 @@ interface ChatDao {
     @Query("SELECT * FROM chat_messages ORDER BY timestamp DESC LIMIT 1")
     fun getLatestMessage(): Flow<ChatEntity?>
 
+    @Query("UPDATE chat_messages SET isAnswered = 1 WHERE id = :messageId")
+    suspend fun markMessageAsAnswered(messageId: Int)
+
+    // Find the most recent message with options that hasn't been answered
+    @Query("SELECT * FROM chat_messages WHERE options != '[]' AND isAnswered = 0 ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLatestUnansweredOptionsMessage(): ChatEntity?
 }
