@@ -7,6 +7,7 @@ import com.ayudevices.neosynkparent.data.network.ChatApiService
 import com.ayudevices.neosynkparent.data.network.TokenSender
 import com.ayudevices.neosynkparent.data.network.FcmApiService
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
+import com.ayudevices.neosynkparent.data.repository.ChatRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.EntryPoint
@@ -17,6 +18,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -69,16 +71,19 @@ object NetworkModule{
         chatDao: ChatDao,
         chatApiService: ChatApiService,
         @ApplicationContext context: Context,
-        authRepository: AuthRepository
+        authRepository: AuthRepository,
+        chatRepositoryProvider: Provider<ChatRepository> // <-- Add this
     ): TokenSender {
         return TokenSender(
             fcmApiService = fcmApiService,
             chatDao = chatDao,
             chatApiService = chatApiService,
             context = context,
-            authRepository = authRepository
+            authRepository = authRepository,
+            chatRepositoryProvider = chatRepositoryProvider // <-- Pass it here
         )
     }
+
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint

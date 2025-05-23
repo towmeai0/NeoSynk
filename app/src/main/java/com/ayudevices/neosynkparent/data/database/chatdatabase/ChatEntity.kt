@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 
+
 @Entity(tableName = "chat_messages")
 @TypeConverters(OptionsTypeConverter::class)
 data class ChatEntity(
@@ -11,5 +12,6 @@ data class ChatEntity(
     val message: String,
     val sender: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val options: List<String> = emptyList() // For Yes/No/Skip buttons
+    val options: List<String> = emptyList(), // For Yes/No/Skip buttons
+    val isAnswered: Boolean = false // Flag to track if options have been responded to
 )

@@ -10,6 +10,7 @@ import com.ayudevices.neosynkparent.data.model.DeviceBodyRequest
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
+import com.ayudevices.neosynkparent.data.repository.ChatRepository
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,14 +18,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Provider
+
 
 class TokenSender @Inject constructor(
     private val fcmApiService: FcmApiService,
     private val chatDao: ChatDao,
     private val chatApiService: ChatApiService,
     @ApplicationContext private val context: Context,
-    private val authRepository: AuthRepository
-) {
+    private val authRepository: AuthRepository,
+    private val chatRepositoryProvider: Provider<ChatRepository> // Lazy injection
+){
     fun sendFcmTokenToServer(token: String) {
         val request = FcmTokenRequest(
             userId = "parent_001",
@@ -81,6 +85,8 @@ class TokenSender @Inject constructor(
     }
 
     fun fetchVitalsFromServer(responseKey: String) {
+        val chatRepository = chatRepositoryProvider.get()
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val userId = authRepository.getCurrentUserId().toString()
@@ -100,9 +106,13 @@ class TokenSender @Inject constructor(
                     }
                     vitalMsg?.let {
                         Log.d("Vitals", "${vitals?.vital?.vitalType}: ${vitals?.vital?.value} at ${vitals?.vital?.recordedAt}")
+
+                        // Insert the vital information message
                         chatDao.insertMessage(ChatEntity(message = it, sender = "bot"))
-                        val chatResponse = chatApiService.sendMessage(ChatRequest(userId, message = "${vitals?.vital?.value}"))
-                        chatDao.insertMessage(ChatEntity(message = chatResponse.response.responseText, sender = "bot"))
+
+                        // IMPORTANT: Use ChatRepository.sendMessage instead of direct API call
+                        // This will trigger all the automatic intent handling
+                        chatRepository.sendMessage("${vitals?.vital?.value}")
                     }
                 } else {
                     Log.e("Vitals", "Fetch failed: ${fetchResponse.code()} ${fetchResponse.message()}")
