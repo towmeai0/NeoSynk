@@ -14,6 +14,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,6 +40,7 @@ class AuthViewModel @Inject constructor(
                     FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                         Log.d("Login", "FCM token: $token")
                         entryPoint.tokenSender().sendFcmTokenToServer(token)
+                        sendParentInfoToServer(userId, email)
                     }
                 } else {
                     Log.e("Login", "UserId is null after login.")
@@ -50,6 +52,27 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+    private fun sendParentInfoToServer(uid: String, email: String) {
+        val apiService = entryPoint.apiService()
+        val request = com.ayudevices.neosynkparent.data.model.ParentInfoRequest(
+            parent_id = uid,
+            email = email
+        )
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                val response = apiService.sendParentInfo(request)
+                if (response.isSuccessful) {
+                    Log.d("Retrofit", "Parent info sent successfully")
+                } else {
+                    Log.e("Retrofit", "Failed to send parent info: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("Retrofit", "Error sending parent info: ${e.localizedMessage}")
+            }
+        }
+    }
+
 
 
     fun signIn(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {

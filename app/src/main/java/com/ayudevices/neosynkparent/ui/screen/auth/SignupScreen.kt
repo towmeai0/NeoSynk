@@ -1,30 +1,34 @@
 package com.ayudevices.neosynkparent.ui.screen.auth
 
+import android.app.Activity
 import android.util.Patterns
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.ayudevices.neosynkparent.R
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.launch
+import com.google.android.gms.auth.api.identity.Identity
 
 @Composable
 fun SignupScreen(
@@ -37,13 +41,34 @@ fun SignupScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+    val activity = context as Activity
+
+    val googleAuthClient = remember { GoogleAuthUiClient(context) }
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val credential = Identity.getSignInClient(context).getSignInCredentialFromIntent(result.data)
+            val idToken = credential.googleIdToken
+
+            idToken?.let {
+                googleAuthClient.handleSignInResult(it) { success, error ->
+                    if (success) {
+                        onSignupSuccess(navController)
+                    } else {
+                        Toast.makeText(context, error ?: "Google Sign-In failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
             .padding(horizontal = 16.dp, vertical = 32.dp)
     ) {
-        // Header
         Text(
             text = "NeoSynk",
             color = Color(0xFFB7FABD),
@@ -52,7 +77,6 @@ fun SignupScreen(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Input fields
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             StyledTextField(value = email, onValueChange = { email = it }, label = "Email")
             StyledTextField(value = password, onValueChange = { password = it }, label = "Password", isPassword = true)
@@ -69,7 +93,6 @@ fun SignupScreen(
             )
         }
 
-        // Sign up button
         Button(
             onClick = {
                 if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
@@ -85,6 +108,7 @@ fun SignupScreen(
                         onSignupSuccess(navController)
                     }, {
                         errorMessage = it
+                        isLoading = false
                     })
                 }
             },
@@ -100,6 +124,33 @@ fun SignupScreen(
                 Text(text = "Sign Up", color = Color.White, fontSize = 16.sp)
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        GoogleSignInButton {
+            googleAuthClient.signIn(launcher)
+        }
+    }
+}
+
+@Composable
+fun GoogleSignInButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        shape = RoundedCornerShape(24.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_google_logo),
+            contentDescription = "Google Sign In",
+            tint = Color.Unspecified,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Continue with Google", color = Color.Black)
     }
 }
 
@@ -134,10 +185,4 @@ fun StyledTextField(
         ),
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignupScreenPreview() {
-    SignupScreen(navController = rememberNavController())
 }

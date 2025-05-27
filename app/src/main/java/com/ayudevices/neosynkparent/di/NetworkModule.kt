@@ -96,5 +96,6 @@ object NetworkModule{
     @EntryPoint
     interface TokenSenderEntryPoint {
         fun tokenSender(): TokenSender
+        fun apiService(): ApiService
     }
 }

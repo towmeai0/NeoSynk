@@ -28,10 +28,12 @@ class TokenSender @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authRepository: AuthRepository,
     private val chatRepositoryProvider: Provider<ChatRepository> // Lazy injection
+
 ){
     fun sendFcmTokenToServer(token: String) {
+        val userId = authRepository.getCurrentUserId()
         val request = FcmTokenRequest(
-            userId = "parent_001",
+            userId = userId.toString(),
             fcmToken = token,
             appType = "parent"
         )
