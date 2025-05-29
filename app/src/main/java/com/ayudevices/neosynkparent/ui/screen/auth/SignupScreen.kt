@@ -1,6 +1,7 @@
 package com.ayudevices.neosynkparent.ui.screen.auth
 
 import android.app.Activity
+import android.provider.ContactsContract.CommonDataKinds.Identity
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
