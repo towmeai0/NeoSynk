@@ -9,7 +9,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface ApiService {
-    @GET("milestone/{milestoneId}")
+    @GET("milestone/{Id}")
     suspend fun fetchMilestone(@Path("milestoneId") milestoneId: String): Response<VitalData>
 
     @POST("register-parent")

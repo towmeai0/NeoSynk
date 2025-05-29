@@ -1,5 +1,6 @@
 package com.ayudevices.neosynkparent.ui.screen.auth
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,24 +22,43 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ayudevices.neosynkparent.viewmodel.ProfileViewModel
 import kotlinx.coroutines.delay
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    googleUserName: String? = null
 ) {
-    val name = viewModel.name
-    val Loc = viewModel.loc
-    val gender = viewModel.gender
-
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var shouldNavigate by remember { mutableStateOf(false) }
 
+    // Local state to track the UI values
+    var name by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
+
+    // Set Google user name when available
+    LaunchedEffect(googleUserName) {
+        Log.d("ProfileScreen", "Received googleUserName: $googleUserName")
+        if (!googleUserName.isNullOrEmpty() && googleUserName != "null") {
+            try {
+                val decodedName = URLDecoder.decode(googleUserName, StandardCharsets.UTF_8.toString())
+                Log.d("ProfileScreen", "Decoded name: $decodedName")
+                name = decodedName // Set local state directly
+            } catch (e: Exception) {
+                Log.e("ProfileScreen", "Error decoding name", e)
+                name = googleUserName // Use original string if decoding fails
+            }
+        }
+    }
+
     // Handle navigation after loading
     if (shouldNavigate) {
         LaunchedEffect(Unit) {
-            delay(1000) // optional delay
+            delay(1000)
             isLoading = false
             shouldNavigate = false
             navController.navigate("home")
@@ -91,23 +111,27 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Input Fields
+            // Input Fields using local state
             ParentProfileInputField(
                 hint = "Name",
                 value = name,
-                onValueChange = { viewModel.name = it }
+                onValueChange = {
+                    name = it
+                    Log.d("ProfileScreen", "Name changed to: $it")
+                }
             )
             Spacer(modifier = Modifier.height(12.dp))
             ParentProfileInputField(
                 hint = "Location",
-                value = Loc,
-                onValueChange = { viewModel.loc = it }
+                value = location,
+                onValueChange = { location = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
-            ParentProfileInputField(
-                hint = "Gender",
-                value = gender,
-                onValueChange = { viewModel.gender = it }
+
+            // Gender Radio Button Section
+            GenderSelectionSection(
+                selectedGender = gender,
+                onGenderSelected = { gender = it }
             )
 
             if (errorMessage.isNotEmpty()) {
@@ -123,11 +147,13 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
-                    if (name.isEmpty() || Loc.isEmpty() || gender.isEmpty()) {
+                    if (name.isEmpty() || location.isEmpty() || gender.isEmpty()) {
                         errorMessage = "Please fill in all fields."
                     } else {
                         errorMessage = ""
                         isLoading = true
+                        // Update ViewModel with current values before saving
+                        viewModel.updateProfile(name, location, gender)
                         viewModel.saveUserProfile()
                         shouldNavigate = true
                     }
@@ -171,6 +197,51 @@ fun ParentProfileInputField(hint: String, value: String, onValueChange: (String)
         ),
         shape = RoundedCornerShape(12.dp)
     )
+}
+
+@Composable
+fun GenderSelectionSection(
+    selectedGender: String,
+    onGenderSelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Gender",
+            color = Color.White,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val genderOptions = listOf("Male", "Female", "Others")
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            genderOptions.forEach { option ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectedGender == option,
+                        onClick = { onGenderSelected(option) },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = Color(0xFFFF9800),
+                            unselectedColor = Color.LightGray
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = option,
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)

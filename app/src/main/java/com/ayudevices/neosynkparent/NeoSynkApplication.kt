@@ -20,7 +20,7 @@ class NeoSynkApplication: Application(){
             if (task.isSuccessful) {
                 val token = task.result
                 Log.d("FCM", "FCM Token: $token")
-                tokenSender.sendFcmTokenToServer(token)
+                //tokenSender.sendFcmTokenToServer(token)
             } else {
                 Log.e("FCM", "Fetching FCM token failed", task.exception)
             }

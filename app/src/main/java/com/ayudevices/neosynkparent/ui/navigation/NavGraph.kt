@@ -85,9 +85,9 @@ fun NeoSynkNavHost(
         composable(Screen.SplashScreen.route) {
             SplashScreen(navController)
         }
-        composable(Screen.DocsScreen.route) {
+        /*composable(Screen.DocsScreen.route) {
             DocsScreen(navController)
-        }
+        }*/
         composable(Screen.DiyaScreen.route) {
             DiyaScreen(navController)
         }

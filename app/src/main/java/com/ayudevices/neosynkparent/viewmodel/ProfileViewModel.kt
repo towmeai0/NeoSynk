@@ -1,57 +1,57 @@
 package com.ayudevices.neosynkparent.viewmodel
 
-
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.auth.FirebaseAuth
-
 @HiltViewModel
-class ProfileViewModel @Inject constructor() : ViewModel() {
-    var name by mutableStateOf("")
-    var loc by mutableStateOf("")
-    var gender by mutableStateOf("")
+class ProfileViewModel @Inject constructor(
+    // Inject your repository or use case here if needed
+) : ViewModel() {
 
-    private val database = FirebaseDatabase.getInstance()
-    private val userRef = database.getReference("NeoSynk").child("user")
+    // Simple properties for storing profile data
+    private var userName: String = ""
+    private var userLocation: String = ""
+    private var userGender: String = ""
+
+    fun updateProfile(name: String, location: String, gender: String) {
+        userName = name
+        userLocation = location
+        userGender = gender
+        Log.d("ProfileViewModel", "Profile updated - Name: $name, Location: $location, Gender: $gender")
+    }
 
     fun saveUserProfile() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val userProfile = mapOf(
-            "id" to userId,
-            "name" to name,
-            "location" to loc,
-            "gender" to gender
-        )
-
-        userRef.child(userId).setValue(userProfile)
-            .addOnSuccessListener {
-                // Profile saved successfully
+        viewModelScope.launch {
+            try {
+                Log.d("ProfileViewModel", "Saving profile: $userName, $userLocation, $userGender")
+                // Implement your profile saving logic here
+                // For example, call repository to save user profile
+                val profileData = UserProfile(
+                    name = userName,
+                    location = userLocation,
+                    gender = userGender
+                )
+                // repository.saveProfile(profileData)
+                Log.d("ProfileViewModel", "Profile saved successfully")
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error saving profile", e)
             }
-            .addOnFailureListener {
-                // Handle error
-            }
+        }
     }
 
-    fun fetchUserProfile() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        userRef.child(userId).get()
-            .addOnSuccessListener { dataSnapshot ->
-                if (dataSnapshot.exists()) {
-                    name = dataSnapshot.child("name").getValue(String::class.java) ?: ""
-                    loc = dataSnapshot.child("location").getValue(String::class.java) ?: ""
-                    gender = dataSnapshot.child("gender").getValue(String::class.java) ?: ""
-                }
-            }
-            .addOnFailureListener {
-                // Handle fetch error
-            }
-    }
+    // Getters if needed
+    fun getName() = userName
+    fun getLocation() = userLocation
+    fun getGender() = userGender
 }
 
+// Data class for user profile
+data class UserProfile(
+    val name: String,
+    val location: String,
+    val gender: String
+)

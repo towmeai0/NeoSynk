@@ -33,7 +33,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Alignment
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,35 +112,36 @@ fun BottomNavigationBar(
     val items = Screen.bottomScreens
     val icons = listOf(
         Icons.Filled.Home,
-        Icons.Filled.ArrowUpward,
-        Icons.Filled.Description,
-        Icons.Filled.Monitor
+        Icons.Filled.Monitor,
+        //Icons.Filled.ArrowUpward,
+        Icons.Filled.Description
     )
     val orange = Color(0xFFFF9800)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 12.dp)
-            .clip(RoundedCornerShape(percent = 90))
-            .background(Color(0xFF1E1E1E))
-            .border(width = 2.dp, color = orange, shape = RoundedCornerShape(percent = 90))
+            .padding(start = 8.dp, end = 8.dp, bottom = 26.dp) // External padding
     ) {
-        NavigationBar(
-            containerColor = Color.Transparent,
-            tonalElevation = 0.dp,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(percent = 50))
-                .background(Color.Transparent)
+                .background(Color(0xFF1E1E1E), RoundedCornerShape(percent = 90))
+                .border(width = 2.dp, color = orange, shape = RoundedCornerShape(percent = 90))
+                .padding(top = 12.dp, bottom = 12.dp), // More bottom padding
+            contentAlignment = Alignment.Center
         ) {
-            items.forEachIndexed { index, screen ->
-                val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                items.forEachIndexed { index, screen ->
+                    val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
 
-                NavigationBarItem(
-                    selected = isSelected,
-                    onClick = { onItemSelected(screen) },
-                    icon = {
+                    IconButton(
+                        onClick = { onItemSelected(screen) }
+                    ) {
                         if (screen.route == Screen.DiyaScreen.route) {
                             Icon(
                                 painter = painterResource(id = R.drawable.diya_icon),
@@ -152,16 +153,12 @@ fun BottomNavigationBar(
                             Icon(
                                 imageVector = icons[index],
                                 contentDescription = screen.route,
-                                tint = if (isSelected) orange else Color.White
+                                tint = if (isSelected) orange else Color.White,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = Color.Transparent,
-                        selectedIconColor = orange,
-                        unselectedIconColor = Color.White
-                    )
-                )
+                    }
+                }
             }
         }
     }

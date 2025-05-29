@@ -33,6 +33,9 @@ class WebRTCManager(
     private var offerListener: ValueEventListener? = null
     private var iceCandidateListener: ChildEventListener? = null
 
+    var onFirstFrameReceived: (() -> Unit)? = null
+
+
     init {
         executor.execute {
             initializePeerConnectionFactory()
@@ -72,7 +75,7 @@ class WebRTCManager(
 
             override fun onIceCandidatesRemoved(p0: Array<out IceCandidate?>?) {}
 
-            override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
+           /* override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
                 val track = receiver?.track()
                 if (track is VideoTrack) {
                     // Handling video track: add it to the remote renderer (UI thread update)
@@ -80,7 +83,26 @@ class WebRTCManager(
                         track.addSink(remoteRenderer)
                     }
                 }
+            }*/
+
+            override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
+                val track = receiver?.track()
+                if (track is VideoTrack) {
+                    Handler(Looper.getMainLooper()).post {
+                        track.addSink(object : VideoSink {
+                            var hasNotified = false
+                            override fun onFrame(frame: VideoFrame?) {
+                                if (!hasNotified) {
+                                    hasNotified = true
+                                    onFirstFrameReceived?.invoke() // Notify only once
+                                }
+                                remoteRenderer?.onFrame(frame)
+                            }
+                        })
+                    }
+                }
             }
+
             override fun onSignalingChange(newState: PeerConnection.SignalingState?) {
                 Log.d("WebRTC", "Signaling state changed: $newState")
             }
