@@ -37,11 +37,7 @@ class AuthViewModel @Inject constructor(
                 authState = AuthState.Authenticated
                 val userId = authRepository.getCurrentUserId()
                 if (!userId.isNullOrEmpty()) {
-                    FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-                        Log.d("Login", "FCM token: $token")
-                        entryPoint.tokenSender().sendFcmTokenToServer(token)
-                        sendParentInfoToServer(userId, email)
-                    }
+                    sendParentInfoToServer(userId, email)
                 } else {
                     Log.e("Login", "UserId is null after login.")
                 }
@@ -58,12 +54,15 @@ class AuthViewModel @Inject constructor(
             parent_id = uid,
             email = email
         )
-
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             try {
                 val response = apiService.sendParentInfo(request)
                 if (response.isSuccessful) {
                     Log.d("Retrofit", "Parent info sent successfully")
+                    FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                        Log.d("Login", "FCM token: $token")
+                        entryPoint.tokenSender().sendFcmTokenToServer(token)
+                    }
                 } else {
                     Log.e("Retrofit", "Failed to send parent info: ${response.code()}")
                 }

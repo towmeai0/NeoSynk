@@ -1,7 +1,7 @@
 package com.ayudevices.neosynkparent.ui.screen.auth
 
 import android.app.Activity
-import android.provider.ContactsContract.CommonDataKinds.Identity
+import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,6 +30,8 @@ import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
 import com.google.android.gms.auth.api.identity.Identity
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun SignupScreen(
@@ -47,15 +49,24 @@ fun SignupScreen(
 
     val googleAuthClient = remember { GoogleAuthUiClient(context) }
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val credential = Identity.getSignInClient(context).getSignInCredentialFromIntent(result.data)
             val idToken = credential.googleIdToken
+            val name = credential.displayName
+            val email = credential.id
+            val profilePicUri = credential.profilePictureUri
+
+            Log.d("GoogleSignIn", "ID Token: $idToken")
+            Log.d("GoogleSignIn", "Name: $name")
+            Log.d("GoogleSignIn", "Email: $email")
+            Log.d("GoogleSignIn", "Profile Pic: $profilePicUri")
 
             idToken?.let {
                 googleAuthClient.handleSignInResult(it) { success, error ->
                     if (success) {
-                        onSignupSuccess(navController)
+                        // Pass the Google user's name to ProfileScreen
+                        onGoogleSignupSuccess(navController, name ?: "")
                     } else {
                         Toast.makeText(context, error ?: "Google Sign-In failed", Toast.LENGTH_SHORT).show()
                     }
@@ -63,6 +74,7 @@ fun SignupScreen(
             }
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -158,6 +170,27 @@ fun GoogleSignInButton(onClick: () -> Unit) {
 fun onSignupSuccess(navController: NavHostController) {
     navController.navigate(Screen.Profile.route) {
         popUpTo(0)
+    }
+}
+
+// Updated function for Google Sign-In success with better logging
+fun onGoogleSignupSuccess(navController: NavHostController, userName: String) {
+    Log.d("SignupScreen", "Navigating with Google user name: $userName")
+    try {
+        // URL encode the name to handle special characters and spaces
+        val encodedName = URLEncoder.encode(userName, StandardCharsets.UTF_8.toString())
+        Log.d("SignupScreen", "Encoded name: $encodedName")
+        val route = "${Screen.Profile.route}?googleUserName=$encodedName"
+        Log.d("SignupScreen", "Navigation route: $route")
+        navController.navigate(route) {
+            popUpTo(0)
+        }
+    } catch (e: Exception) {
+        Log.e("SignupScreen", "Error in navigation", e)
+        // Fallback navigation without parameters
+        navController.navigate(Screen.Profile.route) {
+            popUpTo(0)
+        }
     }
 }
 

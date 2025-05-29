@@ -30,6 +30,26 @@ android {
             )
         }
     }
+
+    // Add packaging configuration to resolve META-INF conflicts
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module",
+                "META-INF/INDEX.LIST",
+                "META-INF/MANIFEST.MF"
+            )
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -86,16 +106,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation(libs.firebase.database.ktx)
 
-    implementation (libs.firebase.database.ktx)
-
-    implementation ("io.github.webrtc-sdk:android:125.6422.06.1")
-
+    implementation("io.github.webrtc-sdk:android:125.6422.06.1")
 
     // CameraX dependencies
-    implementation (libs.androidx.camera.core)
-    implementation (libs.androidx.camera.camera2)
-    implementation (libs.androidx.camera.lifecycle)
-    implementation (libs.androidx.camera.view)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
+    // MLKit for offline translation (recommended for mobile)
+    implementation("com.google.mlkit:translate:17.0.1")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 }

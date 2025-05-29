@@ -31,6 +31,8 @@ fun LiveTab(
     val connectionStatus by viewModel.connectionStatus.collectAsState()
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val hasFrames by viewModel.hasReceivedFrames.collectAsState()
+
 
     // Handle lifecycle events - stop when leaving, auto-restart when returning
     var wasViewingBeforePause by remember { mutableStateOf(false) }
@@ -81,17 +83,22 @@ fun LiveTab(
             contentAlignment = Alignment.Center
         ) {
             if (isViewing) {
-                AndroidView(
-                    factory = { ctx ->
-                        CustomSurfaceViewRenderer(ctx).apply {
-                            viewModel.setRemoteRenderer(this)
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (!hasFrames) {
+                    CircularProgressIndicator(color = Color.White)
+                } else {
+                    AndroidView(
+                        factory = { ctx ->
+                            CustomSurfaceViewRenderer(ctx).apply {
+                                viewModel.setRemoteRenderer(this)
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             } else {
                 Text("Feed Inactive")
             }
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))

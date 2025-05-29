@@ -14,7 +14,7 @@ sealed class Screen(val route: String) {
     object LiveFeedTab : Screen("LiveFeedTab")
     object KidsLoginScreen : Screen("KidsLoginScreen")
     object UploadScreen : Screen("upload")
-    object DocsScreen : Screen("pdf")
+    //object DocsScreen : Screen("pdf")
     object SplashScreen : Screen("SplashScreen")
     object HeartRateDetailsScreen : Screen("HeartRateDetailsScreen")
     object VitalsSPO2Screen :Screen ("VitalsSPO2Screen")
@@ -24,9 +24,10 @@ sealed class Screen(val route: String) {
     companion object {
         val bottomScreens = listOf(
             Home,
+            DiyaScreen,
             UploadScreen,
-            DocsScreen,
-            DiyaScreen
+            //DocsScreen,
+
         )
     }
 }

@@ -38,6 +38,8 @@ class TokenSender @Inject constructor(
             appType = "parent"
         )
 
+        Log.d("FCM","FCM TOKEN Fetched $token")
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = fcmApiService.updateFcmToken(request)
@@ -52,9 +54,10 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestVitals(parentId: String = "parent_001", childId: String = "child_001", reqVitals: List<String>) {
+    fun requestVitals(parentId: String, childId: String, reqVitals: List<String>) {
         Log.d("Vitals", "Vital type: ${reqVitals}")
         val request = VitalsBodyRequest(parentId, childId, reqVitals)
+        Log.d("Vitals", "Data payload: ${request}")
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = fcmApiService.requestVitals(request)
@@ -69,9 +72,10 @@ class TokenSender @Inject constructor(
         }
     }
 
-    fun requestDevice(parentId: String, childId: String = "child_001", reqVitals: List<String>) {
+    fun requestDevice(parentId: String, childId: String, reqVitals: List<String>) {
         Log.d("Device", "Device type: ${reqVitals}")
         val request = DeviceBodyRequest(parentId, childId, reqVitals)
+        Log.d("Device", "Data payload: ${reqVitals}")
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = fcmApiService.requestDevice(request)

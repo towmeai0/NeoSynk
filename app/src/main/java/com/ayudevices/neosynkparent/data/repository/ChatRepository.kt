@@ -65,6 +65,7 @@ class ChatRepository @Inject constructor(
     }
 
     private suspend fun sendToApiAndHandleResponse(userId: String, childId: String, message: String) {
+        Log.d("PARENT AND CJILD IDS ","PARENT AND CJILD IDS $userId $childId")
         val response = apiService.sendMessage(ChatRequest(userId, message))
         val botMessage = response.response.responseText ?: "Failed to get a valid response"
         val intent = response.response.intent

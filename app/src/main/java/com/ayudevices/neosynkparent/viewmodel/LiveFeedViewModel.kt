@@ -45,6 +45,13 @@ class LiveFeedViewModel @Inject constructor(
     // Flag to ensure we only add the lifecycle observer once
     var hasLifecycleObserver: Boolean = false
 
+    private val _hasReceivedFrames = MutableStateFlow(false)
+    val hasReceivedFrames: StateFlow<Boolean> = _hasReceivedFrames
+
+
+    fun setHasReceivedFrames(value: Boolean) {
+        _hasReceivedFrames.value = value
+    }
 
     init {
         if (userId.isNotEmpty()) {
@@ -79,6 +86,7 @@ class LiveFeedViewModel @Inject constructor(
 
         _connectionStatus.value = "Connecting..."
         _isViewing.value = true
+        _hasReceivedFrames.value = false  // Reset before each viewing session
 
         val signalingRoot = database.getReference("NeoSynk").child("signaling").child(userId)
         signalingRoot.child("child").removeValue()
@@ -86,20 +94,23 @@ class LiveFeedViewModel @Inject constructor(
 
         signalingRoot.child("status").setValue(true)
 
-        //database.getReference("NeoSynk").child("status").setValue(true)
-
-        // Create a new WebRTCManager instance each time to ensure proper initialization
-        webRtcManager?.cleanup() // Properly clean up the previous instance
+        webRtcManager?.cleanup()
         webRtcManager = WebRTCManager(
             context = context,
             signalingRef = signalingRoot
-        )
+        ).apply {
+            // Add this callback to update ViewModel state
+            onFirstFrameReceived = {
+                _hasReceivedFrames.value = true
+            }
 
-        // Set the remote renderer again if it was previously set
-        //remoteVideoView?.let { webRtcManager?.setRemoteRenderer(it) }
+            // Restore remote renderer if needed
+            surfaceViewRenderer?.let { setRemoteRenderer(it) }
 
-        webRtcManager?.startStreaming()
+            startStreaming()
+        }
     }
+
 
     internal fun stopViewing() {
         Log.d("LIVE Feed", "STOP called")
@@ -110,6 +121,8 @@ class LiveFeedViewModel @Inject constructor(
 
         // Call the stopStreaming method to remove listeners
         webRtcManager?.stopStreaming()
+        _hasReceivedFrames.value = false // ✅ Reset frame flag
+
 
         //database.getReference("NeoSynk").child("status").setValue(false)
         val signalingRoot = database.getReference("NeoSynk").child("signaling").child(userId)
@@ -145,5 +158,9 @@ class LiveFeedViewModel @Inject constructor(
         stopViewing()
         webRtcManager?.cleanup()
         webRtcManager = null
+    }
+
+    fun onFrameReceived() {
+        setHasReceivedFrames(true)
     }
 }
