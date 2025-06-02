@@ -3,8 +3,10 @@ package com.ayudevices.neosynkparent.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.screen.vitals.WeightDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.auth.KidsLoginScreen
@@ -22,6 +24,7 @@ import com.ayudevices.neosynkparent.ui.screen.dashboard.LiveFeedTab
 import com.ayudevices.neosynkparent.ui.screen.dashboard.MilestoneTab
 import com.ayudevices.neosynkparent.ui.screen.dashboard.UploadScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.LiveTab
+import com.ayudevices.neosynkparent.ui.screen.tabs.MilestoneDetailScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.MilestoneQues
 import com.ayudevices.neosynkparent.ui.screen.vitals.HeartRateDetailsScreen
 import com.ayudevices.neosynkparent.ui.screen.vitals.VitalsSPO2Screen
@@ -80,7 +83,12 @@ fun NeoSynkNavHost(
             MilestoneQues(navController)
         }
         composable(Screen.UploadScreen.route) {
-            UploadScreen(navController)
+            FirebaseAuth.getInstance().currentUser?.uid?.let { it1 ->
+                UploadScreen(
+                    navController,
+                    userId = it1
+                )
+            }
         }
         composable(Screen.SplashScreen.route) {
             SplashScreen(navController)
@@ -99,6 +107,22 @@ fun NeoSynkNavHost(
         }
         composable(Screen.WeightDetailsScreen.route) {
             WeightDetailsScreen(navController)
+        }
+
+        composable(
+            route = Screen.MilestoneDetail.route,
+            arguments = listOf(
+                navArgument("category") { type = NavType.StringType },
+                navArgument("userId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            MilestoneDetailScreen(
+                navController = navController,
+                category = category,
+                userId = userId
+            )
         }
     }
 }

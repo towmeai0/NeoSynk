@@ -21,6 +21,10 @@ sealed class Screen(val route: String) {
     object WeightDetailsScreen :Screen ("WeightDetailsScreen")
     object  MilestoneQues: Screen(" MilestoneQues")
 
+    object MilestoneDetail : Screen("milestone_detail/{category}/{userId}") {
+        fun createRoute(category: String, userId: String) = "milestone_detail/$category/$userId"
+    }
+
     companion object {
         val bottomScreens = listOf(
             Home,
