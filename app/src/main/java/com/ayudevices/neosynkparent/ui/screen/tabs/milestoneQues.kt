@@ -35,7 +35,7 @@ fun MilestoneQues(
     navController: NavController,
     milestoneViewModel: MilestoneViewModel = hiltViewModel()
 ) {
-    val currentLeap by milestoneViewModel.currentLeap.collectAsState()
+    /*val currentLeap by milestoneViewModel.currentLeap.collectAsState()
     val currentCategory by milestoneViewModel.currentCategory.collectAsState()
     val currentQuestionIndex by milestoneViewModel.currentQuestionIndex.collectAsState()
 
@@ -180,7 +180,7 @@ fun MilestoneQues(
                 }
             }
         }
-    }
+    }*/
 }
 
 @Composable

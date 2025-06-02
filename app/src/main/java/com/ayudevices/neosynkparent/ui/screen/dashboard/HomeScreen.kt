@@ -43,6 +43,7 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
+        Log.d("USER","USER DATA ${user?.uid}")
         if (user == null) {
             navController.navigate(Screen.Login.route) {
                 popUpTo(Screen.Home.route) { inclusive = true }
@@ -80,7 +81,12 @@ fun HomeScreen(
             when (selectedTab.value) {
                 Tab.LIVE_FEED -> LiveFeedTab(navController)
                 Tab.VITALS -> VitalsTab(navController)
-                Tab.MILESTONES -> MilestonesTab(navController)
+                Tab.MILESTONES -> authViewModel.getCurrentUser()?.uid?.let {
+                    MilestonesTab(
+                        navController = navController,
+                        userId = it// or whatever userId you have
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -150,5 +156,8 @@ fun VitalsTab(navController: NavController) {
 
 @Composable
 fun MilestoneTab(navController: NavController) {
-    MilestonesTab(navController = navController)
+    MilestonesTab(
+        navController = navController,
+        userId = "user123" // or whatever userId you have
+    )
 }

@@ -54,48 +54,125 @@ class ChatRepository @Inject constructor(
 
         } catch (e: Exception) {
             Log.e("ChatRepository", "Error sending message", e)
-            chatDao.insertMessage(
-                ChatEntity(
-                    message = "Something went wrong. Try again later.",
-                    sender = "bot",
-                    timestamp = System.currentTimeMillis()
-                )
-            )
+            // Check if this is a report generation response with JSON format
+            handleReportGenerationResponse(e, message)
         }
     }
 
-    private suspend fun sendToApiAndHandleResponse(userId: String, childId: String, message: String) {
-        Log.d("PARENT AND CJILD IDS ","PARENT AND CJILD IDS $userId $childId")
-        val response = apiService.sendMessage(ChatRequest(userId, message))
-        val botMessage = response.response.responseText ?: "Failed to get a valid response"
-        val intent = response.response.intent
-        Log.d("ChatRepository", "Intent received: $intent")
-        Log.d("ChatRepository", "Message: $message")
+    private suspend fun handleReportGenerationResponse(exception: Exception, originalMessage: String) {
+        try {
+            // Check if the exception message or response contains JSON with report_generated intent
+            val errorMessage = exception.message ?: ""
+            Log.d("ChatRepository", "Checking for report generation in error: $errorMessage")
 
-        // Add the bot's response from API
-        val options = getOptionsForIntent(intent)
-        chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot", options = options))
+            // Check if this is related to report generation
+            if (originalMessage.lowercase().contains("report") ||
+                originalMessage.lowercase().contains("generate") ||
+                errorMessage.contains("report_generated")) {
 
-        // Handle automatic vital requests (no user interaction needed)
-        val isVitalHandled = handleAutomaticVitalRequests(intent, userId, childId)
-        Log.d("ChatRepository", "Vital request handled automatically: $isVitalHandled")
+                Log.d("ChatRepository", "Detected report generation request")
 
-        if (isVitalHandled) {
-            return // Intent was handled automatically
+                // Insert the report generation message
+                chatDao.insertMessage(
+                    ChatEntity(
+                        message = "Report Generated, Please check Ayu Report to download.",
+                        sender = "bot",
+                        timestamp = System.currentTimeMillis()
+                    )
+                )
+                return
+            }
+        } catch (e: Exception) {
+            Log.e("ChatRepository", "Error handling report generation response", e)
         }
 
-        // Handle automatic device requests (call requestDevice immediately)
-        handleAutomaticDeviceRequests(intent, userId, childId)
+        // If not a report generation case, show generic error
+        chatDao.insertMessage(
+            ChatEntity(
+                message = "Something went wrong. Try again later.",
+                sender = "bot",
+                timestamp = System.currentTimeMillis()
+            )
+        )
+    }
 
-        // Set pending intent if needed for user interaction
-        setPendingIntentIfNeeded(intent, userId)
+    private suspend fun sendToApiAndHandleResponse(userId: String, childId: String, message: String) {
+        Log.d("PARENT AND CHILD IDS", "PARENT AND CHILD IDS $userId $childId")
 
-        // Add a small delay to ensure database write completes
-        kotlinx.coroutines.delay(50)
+        try {
+            val response = apiService.sendMessage(ChatRequest(userId, message))
+            val botMessage = response.response.responseText ?: "Failed to get a valid response"
+            val intent = response.response.intent
+            Log.d("ChatRepository", "Intent received: $intent")
+            Log.d("ChatRepository", "Message: $message")
 
-        // Debug log to check pending intent
-        val currentPendingIntent = pendingIntentDao.getPendingIntent()
-        Log.d("ChatRepository", "Current pending intent after setting: ${currentPendingIntent?.vitalType}, awaiting: ${currentPendingIntent?.isAwaitingResponse}")
+            // Add the bot's response from API
+            val options = getOptionsForIntent(intent)
+            chatDao.insertMessage(ChatEntity(message = botMessage, sender = "bot", options = options))
+
+            // Handle report_generated intent
+            if (intent == "report_generated") {
+                Log.d("ChatRepository", "Handling report_generated intent")
+                chatDao.insertMessage(
+                    ChatEntity(
+                        message = "Report Generated. Please check Ayu Report to download.",
+                        sender = "bot",
+                        timestamp = System.currentTimeMillis()
+                    )
+                )
+                return // No further processing needed for this intent
+            }
+
+            // Handle automatic vital requests (no user interaction needed)
+            val isVitalHandled = handleAutomaticVitalRequests(intent, userId, childId)
+            Log.d("ChatRepository", "Vital request handled automatically: $isVitalHandled")
+
+            if (isVitalHandled) {
+                return // Intent was handled automatically
+            }
+
+            // Handle automatic device requests (call requestDevice immediately)
+            handleAutomaticDeviceRequests(intent, userId, childId)
+
+            // Set pending intent if needed for user interaction
+            setPendingIntentIfNeeded(intent, userId)
+
+            // Add a small delay to ensure database write completes
+            kotlinx.coroutines.delay(50)
+
+            // Debug log to check pending intent
+            val currentPendingIntent = pendingIntentDao.getPendingIntent()
+            Log.d("ChatRepository", "Current pending intent after setting: ${currentPendingIntent?.vitalType}, awaiting: ${currentPendingIntent?.isAwaitingResponse}")
+
+        } catch (e: Exception) {
+            Log.e("ChatRepository", "Error in sendToApiAndHandleResponse", e)
+
+            // Check if this might be a report generation response with different JSON format
+            if (message.lowercase().contains("report") || message.lowercase().contains("generate")) {
+                Log.d("ChatRepository", "Attempting to handle as report generation")
+                try {
+                    // Try to parse the response if it's in JSON format
+                    val errorMessage = e.message ?: ""
+                    if (errorMessage.contains("report_generated") ||
+                        message.lowercase().contains("generate report")) {
+
+                        chatDao.insertMessage(
+                            ChatEntity(
+                                message = "Report Generated, Please check Ayu Report to download.",
+                                sender = "bot",
+                                timestamp = System.currentTimeMillis()
+                            )
+                        )
+                        return
+                    }
+                } catch (parseException: Exception) {
+                    Log.e("ChatRepository", "Error parsing report response", parseException)
+                }
+            }
+
+            // Re-throw the exception to be handled by the outer catch block
+            throw e
+        }
     }
 
     private suspend fun handleAutomaticVitalRequests(intent: String?, userId: String, childId: String): Boolean {
@@ -192,7 +269,7 @@ class ChatRepository @Inject constructor(
             "dob_saved" ->
                 listOf("OK")
             "height_vital_request", "weight_vital_request",
-            "heart_rate_vital_request", "spo2_vital_request" ->
+            "heart_rate_vital_request", "spo2_vital_request", "report_generated" ->
                 emptyList()
             else -> emptyList()
         }
