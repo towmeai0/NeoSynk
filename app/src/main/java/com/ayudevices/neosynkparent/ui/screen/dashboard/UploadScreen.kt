@@ -1,6 +1,8 @@
 package com.ayudevices.neosynkparent.ui.screen.dashboard
 
 import android.net.Uri
+import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -19,6 +21,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,65 +29,106 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.ayudevices.neosynkparent.data.model.AyuReportResponse
+import com.ayudevices.neosynkparent.data.model.MedicalReportResponse
+import com.ayudevices.neosynkparent.data.model.UploadStatus
 import com.ayudevices.neosynkparent.data.repository.FileUploadRepository
 import com.ayudevices.neosynkparent.ui.theme.appBarColor
 import com.ayudevices.neosynkparent.ui.theme.orange
+import com.ayudevices.neosynkparent.viewmodel.AyuReportViewModel
+import com.ayudevices.neosynkparent.viewmodel.DownloadStatus
+import com.ayudevices.neosynkparent.viewmodel.MedicalReportViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Data classes for reports
-data class MedicalReport(
-    val id: String,
-    val name: String,
-    val uploadDate: String,
-    val fileType: String,
-    val size: String
-)
 
+// Updated data classes
 data class AyuReport(
     val id: String,
     val name: String,
     val generatedDate: String,
     val reportType: String,
-    val downloadUrl: String
+    val downloadUrl: String,
+    val responseData: AyuReportResponse? = null // Include the full response data
 )
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadScreen(navController: NavController) {
+fun UploadScreen(
+    navController: NavController,
+    ayuReportViewModel: AyuReportViewModel = hiltViewModel(),
+    medicalReportViewModel: MedicalReportViewModel = hiltViewModel(),
+    userId: String
+) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf<String?>(null) }
-    var isUploading by remember { mutableStateOf(false) }
-    var uploadMessage by remember { mutableStateOf<String?>(null) }
     var showUploadDialog by remember { mutableStateOf(false) }
 
-    // Dummy data for medical reports
-    var medicalReports by remember {
-        mutableStateOf(listOf(
-            MedicalReport("1", "Blood Test Report.pdf", "2024-05-20", "PDF", "2.3 MB"),
-            MedicalReport("2", "X-Ray Chest.jpg", "2024-05-18", "Image", "1.8 MB"),
-            MedicalReport("3", "ECG Report.pdf", "2024-05-15", "PDF", "1.2 MB"),
-            MedicalReport("4", "MRI Scan.pdf", "2024-05-10", "PDF", "5.6 MB")
-        ))
-    }
+    // Observe Medical Reports from ViewModel
+    val medicalReports by medicalReportViewModel.medicalReports.observeAsState(emptyList())
+    val isLoadingMedical by medicalReportViewModel.isLoading.observeAsState(false)
+    val medicalError by medicalReportViewModel.error.observeAsState()
+    val uploadStatus by medicalReportViewModel.uploadStatus.observeAsState(UploadStatus.Idle)
 
-    // Dummy data for Ayu reports
-    val ayuReports = remember {
-        listOf(
-            AyuReport("1", "Comprehensive Health Analysis", "2024-05-25", "Health Analysis", "https://example.com/report1.pdf"),
-            AyuReport("2", "Dosha Assessment Report", "2024-05-22", "Dosha Analysis", "https://example.com/report2.pdf"),
-            AyuReport("3", "Wellness Recommendation", "2024-05-20", "Wellness Plan", "https://example.com/report3.pdf"),
-            AyuReport("4", "Progress Tracking Report", "2024-05-18", "Progress Report", "https://example.com/report4.pdf")
-        )
-    }
+    // Observe AyuReports from ViewModel
+    val ayuReports by ayuReportViewModel.ayuReports.observeAsState(emptyList())
+    val isLoadingAyu by ayuReportViewModel.isLoading.observeAsState(false)
+    val ayuError by ayuReportViewModel.error.observeAsState()
+    val downloadStatus by ayuReportViewModel.downloadStatus.observeAsState(DownloadStatus.Idle)
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val fileUploadRepository = remember { FileUploadRepository() }
+
+    // Load Medical reports when Medical Reports tab is selected
+    LaunchedEffect(selectedTabIndex) {
+        if (selectedTabIndex == 0 && medicalReports.isEmpty() && !isLoadingMedical && medicalError == null) {
+            medicalReportViewModel.loadMedicalReports(userId)
+        }
+    }
+
+    // Load Ayu reports when Ayu Reports tab is selected
+    LaunchedEffect(selectedTabIndex) {
+        if (selectedTabIndex == 1 && ayuReports.isEmpty() && !isLoadingAyu && ayuError == null) {
+            ayuReportViewModel.loadAyuReports()
+        }
+    }
+
+    // Handle upload status
+    LaunchedEffect(uploadStatus) {
+        when (uploadStatus) {
+            is UploadStatus.Success -> {
+                Toast.makeText(context, (uploadStatus as UploadStatus.Success).message, Toast.LENGTH_SHORT).show()
+                showUploadDialog = false
+                selectedFileUri = null
+                selectedFileName = null
+                medicalReportViewModel.clearUploadStatus()
+            }
+            is UploadStatus.Error -> {
+                Toast.makeText(context, "Upload failed: ${(uploadStatus as UploadStatus.Error).message}", Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
+    }
+
+    // Handle download status
+    LaunchedEffect(downloadStatus) {
+        when (downloadStatus) {
+            is DownloadStatus.Success -> {
+                Toast.makeText(context, "Report downloaded successfully", Toast.LENGTH_SHORT).show()
+                ayuReportViewModel.clearDownloadStatus()
+            }
+            is DownloadStatus.Error -> {
+                Toast.makeText(context, "Download failed: ${(downloadStatus as DownloadStatus.Error).message}", Toast.LENGTH_SHORT).show()
+                ayuReportViewModel.clearDownloadStatus()
+            }
+            else -> {}
+        }
+    }
 
     // File picker launcher
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -95,7 +139,7 @@ fun UploadScreen(navController: NavController) {
             val cursor = context.contentResolver.query(it, null, null, null, null)
             cursor?.use { c ->
                 if (c.moveToFirst()) {
-                    val displayNameIndex = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    val displayNameIndex = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                     if (displayNameIndex != -1) {
                         selectedFileName = c.getString(displayNameIndex)
                     }
@@ -132,7 +176,7 @@ fun UploadScreen(navController: NavController) {
                     )
                 }
 
-                // Tab Row - Fixed tab indicator
+                // Tab Row
                 TabRow(
                     selectedTabIndex = selectedTabIndex,
                     containerColor = Color.Black,
@@ -168,12 +212,30 @@ fun UploadScreen(navController: NavController) {
 
                 // Tab Content
                 when (selectedTabIndex) {
-                    0 -> MedicalReportsTab(medicalReports)
-                    1 -> AyuReportsTab(ayuReports)
+                    0 -> MedicalReportsTab(
+                        reports = medicalReports,
+                        isLoading = isLoadingMedical,
+                        error = medicalError,
+                        onRetry = {
+                            medicalReportViewModel.loadMedicalReports(userId)
+                        }
+                    )
+                    1 -> AyuReportsTab(
+                        reports = ayuReports,
+                        isLoading = isLoadingAyu,
+                        error = ayuError,
+                        downloadStatus = downloadStatus,
+                        onDownload = { report ->
+                            ayuReportViewModel.downloadPdf(report, context)
+                        },
+                        onRetry = {
+                            ayuReportViewModel.loadAyuReports()
+                        }
+                    )
                 }
             }
 
-            // Floating Action Button (only visible in Medical Reports tab)
+            // Floating Action Button (only for Medical Reports tab)
             if (selectedTabIndex == 0) {
                 FloatingActionButton(
                     onClick = {
@@ -197,117 +259,218 @@ fun UploadScreen(navController: NavController) {
         if (showUploadDialog) {
             UploadDialog(
                 fileName = selectedFileName ?: "",
-                isUploading = isUploading,
-                uploadMessage = uploadMessage,
+                uploadStatus = uploadStatus,
                 onUpload = {
                     selectedFileUri?.let { uri ->
-                        isUploading = true
-                        uploadMessage = null
-
-                        scope.launch {
-                            fileUploadRepository.uploadFile(
-                                uri = uri,
-                                context = context,
-                                uploadUrl = "https://your-server.com/upload",
-                                onSuccess = { response ->
-                                    isUploading = false
-                                    uploadMessage = "File uploaded successfully!"
-
-                                    // Add new report to the list
-                                    val newReport = MedicalReport(
-                                        id = (medicalReports.size + 1).toString(),
-                                        name = selectedFileName ?: "Unknown file",
-                                        uploadDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
-                                        fileType = getFileType(selectedFileName ?: ""),
-                                        size = "Unknown"
-                                    )
-                                    medicalReports = medicalReports + newReport
-
-                                    // Reset after successful upload - Fixed coroutine scope
-                                    scope.launch {
-                                        delay(2000)
-                                        showUploadDialog = false
-                                        selectedFileUri = null
-                                        selectedFileName = null
-                                        uploadMessage = null
-                                    }
-                                },
-                                onError = { error ->
-                                    isUploading = false
-                                    uploadMessage = "Upload failed: $error"
-                                }
-                            )
-                        }
+                        medicalReportViewModel.uploadMedicalReport(userId, uri, context)
                     }
                 },
                 onDismiss = {
                     showUploadDialog = false
                     selectedFileUri = null
                     selectedFileName = null
-                    uploadMessage = null
+                    medicalReportViewModel.clearUploadStatus()
                 }
             )
         }
     }
 }
 
+
+
 @Composable
-fun MedicalReportsTab(reports: List<MedicalReport>) {
-    if (reports.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = "No Reports",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(64.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "No medical reports found",
-                    color = Color.Gray,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Tap the + button to upload your first report",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
+fun MedicalReportsTab(
+    reports: List<MedicalReportResponse>,
+    isLoading: Boolean,
+    error: String?,
+    onRetry: () -> Unit
+) {
+    when {
+        isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = orange)
             }
         }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(reports) { report ->
-                MedicalReportCard(report = report)
+
+        error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Error loading reports",
+                        color = Color.Red,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = error,
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(containerColor = orange)
+                    ) {
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+
+        reports.isEmpty() -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = "No Reports",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No medical reports found",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Tap the + button to upload your first report",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+
+        else -> {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(reports) { report ->
+                    MedicalReportCard(report = report)
+                }
             }
         }
     }
 }
 
+// Updated UploadDialog
 @Composable
-fun AyuReportsTab(reports: List<AyuReport>) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(reports) { report ->
-            AyuReportCard(report = report)
+fun UploadDialog(
+    fileName: String,
+    uploadStatus: UploadStatus,
+    onUpload: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {
+            if (uploadStatus !is UploadStatus.Loading) onDismiss()
+        },
+        containerColor = appBarColor,
+        title = {
+            Text(
+                text = "Upload Medical Report",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.Gray.copy(alpha = 0.2f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Selected File:",
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Light
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = fileName,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                when (uploadStatus) {
+                    is UploadStatus.Success -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = uploadStatus.message,
+                            color = Color.Green,
+                            fontSize = 14.sp
+                        )
+                    }
+                    is UploadStatus.Error -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = uploadStatus.message,
+                            color = Color.Red,
+                            fontSize = 14.sp
+                        )
+                    }
+                    else -> {}
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onUpload,
+                colors = ButtonDefaults.buttonColors(containerColor = orange),
+                enabled = uploadStatus !is UploadStatus.Loading && uploadStatus !is UploadStatus.Success
+            ) {
+                when (uploadStatus) {
+                    is UploadStatus.Loading -> {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Uploading...")
+                    }
+                    is UploadStatus.Success -> {
+                        Text("Done")
+                    }
+                    else -> {
+                        Text("Upload")
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            if (uploadStatus !is UploadStatus.Loading) {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text("Cancel", color = Color.Gray)
+                }
+            }
         }
-    }
+    )
 }
 
+
+
+
 @Composable
-fun MedicalReportCard(report: MedicalReport) {
+fun MedicalReportCard(report: MedicalReportResponse) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = appBarColor.copy(alpha = 0.3f)),
@@ -364,10 +527,100 @@ fun MedicalReportCard(report: MedicalReport) {
     }
 }
 
+// Updated AyuReportsTab
 @Composable
-fun AyuReportCard(report: AyuReport) {
-    val context = LocalContext.current
+fun AyuReportsTab(
+    reports: List<AyuReport>,
+    isLoading: Boolean,
+    error: String?,
+    downloadStatus: DownloadStatus,
+    onDownload: (AyuReport) -> Unit,
+    onRetry: () -> Unit
+) {
+    when {
+        isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = orange)
+            }
+        }
 
+        error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Error loading reports",
+                        color = Color.Red,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = error,
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(containerColor = orange)
+                    ) {
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+
+        reports.isEmpty() -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = "No Reports",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No Ayu reports found",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+
+        else -> {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(reports) { report ->
+                    AyuReportCard(
+                        report = report,
+                        downloadStatus = downloadStatus,
+                        onDownload = { onDownload(report) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AyuReportCard(
+    report: AyuReport,
+    downloadStatus: DownloadStatus,
+    onDownload: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = appBarColor.copy(alpha = 0.3f)),
@@ -397,22 +650,36 @@ fun AyuReportCard(report: AyuReport) {
                 }
 
                 IconButton(
-                    onClick = {
-                        // Handle download - you can implement actual download logic here
-                        // For now, just show a toast or log
-                        android.widget.Toast.makeText(
-                            context,
-                            "Downloading ${report.name}",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    onClick = onDownload,
+                    enabled = downloadStatus !is DownloadStatus.Loading ||
+                            (downloadStatus as? DownloadStatus.Loading)?.reportId != report.id
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Download,
-                        contentDescription = "Download Report",
-                        tint = orange,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    when (downloadStatus) {
+                        is DownloadStatus.Loading -> {
+                            if (downloadStatus.reportId == report.id) {
+                                CircularProgressIndicator(
+                                    color = orange,
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Download,
+                                    contentDescription = "Download Report",
+                                    tint = orange,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        else -> {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = "Download Report",
+                                tint = orange,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -432,20 +699,31 @@ fun AyuReportCard(report: AyuReport) {
                 color = Color.Gray,
                 fontSize = 12.sp
             )
+
+            // Show additional info from response data
+            report.responseData?.let { response ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Age: ${response.response_text.Age} months",
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }
 
-@Composable
+/*@Composable
 fun UploadDialog(
     fileName: String,
-    isUploading: Boolean,
-    uploadMessage: String?,
+    uploadStatus: UploadStatus,
     onUpload: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = { if (!isUploading) onDismiss() },
+        onDismissRequest = {
+            if (uploadStatus !is UploadStatus.Loading) onDismiss()
+        },
         containerColor = appBarColor,
         title = {
             Text(
@@ -479,13 +757,24 @@ fun UploadDialog(
                     }
                 }
 
-                uploadMessage?.let { message ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = message,
-                        color = if (message.contains("success")) Color.Green else Color.Red,
-                        fontSize = 14.sp
-                    )
+                when (uploadStatus) {
+                    is UploadStatus.Success -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = uploadStatus.message,
+                            color = Color.Green,
+                            fontSize = 14.sp
+                        )
+                    }
+                    is UploadStatus.Error -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = uploadStatus.message,
+                            color = Color.Red,
+                            fontSize = 14.sp
+                        )
+                    }
+                    else -> {}
                 }
             }
         },
@@ -493,24 +782,28 @@ fun UploadDialog(
             Button(
                 onClick = onUpload,
                 colors = ButtonDefaults.buttonColors(containerColor = orange),
-                enabled = !isUploading && uploadMessage?.contains("success") != true
+                enabled = uploadStatus !is UploadStatus.Loading && uploadStatus !is UploadStatus.Success
             ) {
-                if (isUploading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Uploading...")
-                } else if (uploadMessage?.contains("success") == true) {
-                    Text("Done")
-                } else {
-                    Text("Upload")
+                when (uploadStatus) {
+                    is UploadStatus.Loading -> {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Uploading...")
+                    }
+                    is UploadStatus.Success -> {
+                        Text("Done")
+                    }
+                    else -> {
+                        Text("Upload")
+                    }
                 }
             }
         },
         dismissButton = {
-            if (!isUploading) {
+            if (uploadStatus !is UploadStatus.Loading) {
                 TextButton(
                     onClick = onDismiss
                 ) {
@@ -519,7 +812,7 @@ fun UploadDialog(
             }
         }
     )
-}
+}*/
 
 private fun getFileType(fileName: String): String {
     return when {

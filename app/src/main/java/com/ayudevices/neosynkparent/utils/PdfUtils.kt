@@ -120,14 +120,14 @@ fun generateBabyReportPDF(
         canvas.drawText("Developmental Progress", margin + 20, y.toFloat(), milestoneTitlePaint)
         y += 40
 
-        val currentLeap = vm.currentLeap.value
+       /* val currentLeap = vm.currentLeap.value
         if (currentLeap in 1..10) {
             checkSpaceNeeded(50)
             canvas.drawText("Current Developmental Leap: Leap $currentLeap", margin + 20, y.toFloat(), labelPaint)
             y += 25
             canvas.drawText(vm.getLeapTitle(currentLeap), margin + 40, y.toFloat(), valuePaint)
             y += 25
-        }
+        }*/
 
         val overallProgress = vm.overallProgress.value
         canvas.drawText("Overall Progress: $overallProgress%", margin + 20, y.toFloat(), labelPaint)
@@ -144,7 +144,7 @@ fun generateBabyReportPDF(
             10f,
             progressBackgroundPaint
         )
-        canvas.drawRoundRect(
+       /* canvas.drawRoundRect(
             margin + 20,
             y.toFloat(),
             margin + 20 + progressWidth,
@@ -152,7 +152,7 @@ fun generateBabyReportPDF(
             10f,
             10f,
             progressPaint
-        )
+        )*/
         y += 50
 
         fun drawCategoryProgress(category: String, progress: Int) {
@@ -181,10 +181,10 @@ fun generateBabyReportPDF(
             y += 40
         }
 
-        drawCategoryProgress("Motor", vm.motorProgress.value)
+        /*drawCategoryProgress("Motor", vm.motorProgress.value)
         drawCategoryProgress("Sensory", vm.sensoryProgress.value)
         drawCategoryProgress("Communication", vm.communicationProgress.value)
-        drawCategoryProgress("Feeding", vm.feedingProgress.value)
+        drawCategoryProgress("Feeding", vm.feedingProgress.value)*/
 
 
     }

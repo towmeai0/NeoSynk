@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.media3.common.ktx)
     implementation(libs.play.services.auth)
+    implementation(libs.androidx.runtime.livedata)
     ksp(libs.hilt.compiler)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.hilt.navigation.compose)
