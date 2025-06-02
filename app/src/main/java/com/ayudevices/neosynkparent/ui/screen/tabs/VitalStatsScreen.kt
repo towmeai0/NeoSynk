@@ -12,9 +12,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ayudevices.neosynkparent.ui.theme.NeoSynkTheme
 import com.ayudevices.neosynkparent.viewmodel.DocsViewModel
 
 @Composable
@@ -133,5 +136,15 @@ data class VitalCardData(
     val value: String,
     val icon: String,
     val gradient: Brush,
-    val navigateTo: String
+    val navigateTo: String 
 )
+
+@Preview(showBackground = true)
+@Composable
+fun VitalTabScreenPreview(){
+    NeoSynkTheme {
+        VitalTabScreen(
+            navController = rememberNavController()
+        )
+    }
+}
