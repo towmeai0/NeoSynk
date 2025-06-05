@@ -1,57 +1,85 @@
 package com.ayudevices.neosynkparent.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
-    // Inject your repository or use case here if needed
-) : ViewModel() {
+class ProfileViewModel @Inject constructor() : ViewModel() {
 
-    // Simple properties for storing profile data
-    private var userName: String = ""
-    private var userLocation: String = ""
-    private var userGender: String = ""
+    var name = mutableStateOf("")
+    var location = mutableStateOf("")
+    var gender = mutableStateOf("")
+    var loading = mutableStateOf(true)
+
+    private val databaseRef = FirebaseDatabase.getInstance().getReference("NeoSynk").child("user")
+
+    init {
+        fetchUserProfile()
+    }
+
+    fun fetchUserProfile() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (currentUserId == null) {
+            Log.e("ProfileViewModel", "User not logged in.")
+            loading.value = false
+            return
+        }
+
+        Log.d("ProfileViewModel", "Current UID: $currentUserId")
+
+        databaseRef.child(currentUserId).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                name.value = snapshot.child("name").getValue(String::class.java) ?: ""
+                location.value = snapshot.child("location").getValue(String::class.java) ?: ""
+                gender.value = snapshot.child("gender").getValue(String::class.java) ?: ""
+                loading.value = false
+
+                Log.d("ProfileViewModel", "Fetched data - Name: ${name.value}, Location: ${location.value}, Gender: ${gender.value}")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ProfileViewModel", "Firebase error: ${error.message}")
+                loading.value = false
+            }
+        })
+    }
 
     fun updateProfile(name: String, location: String, gender: String) {
-        userName = name
-        userLocation = location
-        userGender = gender
-        Log.d("ProfileViewModel", "Profile updated - Name: $name, Location: $location, Gender: $gender")
+        this.name.value = name
+        this.location.value = location
+        this.gender.value = gender
     }
 
     fun saveUserProfile() {
         viewModelScope.launch {
-            try {
-                Log.d("ProfileViewModel", "Saving profile: $userName, $userLocation, $userGender")
-                // Implement your profile saving logic here
-                // For example, call repository to save user profile
-                val profileData = UserProfile(
-                    name = userName,
-                    location = userLocation,
-                    gender = userGender
-                )
-                // repository.saveProfile(profileData)
-                Log.d("ProfileViewModel", "Profile saved successfully")
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error saving profile", e)
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+            if (currentUserId == null) {
+                Log.e("ProfileViewModel", "Cannot save - user not logged in.")
+                return@launch
             }
+
+            val profileData = mapOf(
+                "name" to name.value,
+                "location" to location.value,
+                "gender" to gender.value
+            )
+
+            databaseRef.child(currentUserId).setValue(profileData)
+                .addOnSuccessListener {
+                    Log.d("ProfileViewModel", "Profile saved successfully.")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ProfileViewModel", "Failed to save profile", e)
+                }
         }
     }
-
-    // Getters if needed
-    fun getName() = userName
-    fun getLocation() = userLocation
-    fun getGender() = userGender
 }
-
-// Data class for user profile
-data class UserProfile(
-    val name: String,
-    val location: String,
-    val gender: String
-)

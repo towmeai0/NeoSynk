@@ -2,26 +2,54 @@ package com.ayudevices.neosynkparent.ui.screen.dashboard
 
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,16 +62,14 @@ import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.data.model.AyuReportResponse
 import com.ayudevices.neosynkparent.data.model.MedicalReportResponse
 import com.ayudevices.neosynkparent.data.model.UploadStatus
-import com.ayudevices.neosynkparent.data.repository.FileUploadRepository
 import com.ayudevices.neosynkparent.ui.theme.appBarColor
 import com.ayudevices.neosynkparent.ui.theme.orange
 import com.ayudevices.neosynkparent.viewmodel.AyuReportViewModel
 import com.ayudevices.neosynkparent.viewmodel.DownloadStatus
 import com.ayudevices.neosynkparent.viewmodel.MedicalReportViewModel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 
 // Updated data classes
@@ -123,6 +149,7 @@ fun UploadScreen(
                 ayuReportViewModel.clearDownloadStatus()
             }
             is DownloadStatus.Error -> {
+                Log.d("DownloadStatus", "Download failed: ${(downloadStatus as DownloadStatus.Error).message}")
                 Toast.makeText(context, "Download failed: ${(downloadStatus as DownloadStatus.Error).message}", Toast.LENGTH_SHORT).show()
                 ayuReportViewModel.clearDownloadStatus()
             }
@@ -527,7 +554,8 @@ fun MedicalReportCard(report: MedicalReportResponse) {
     }
 }
 
-// Updated AyuReportsTab
+
+
 @Composable
 fun AyuReportsTab(
     reports: List<AyuReport>,
@@ -537,6 +565,10 @@ fun AyuReportsTab(
     onDownload: (AyuReport) -> Unit,
     onRetry: () -> Unit
 ) {
+    val currentTime = remember {
+        SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+    }
+
     when {
         isLoading -> {
             Box(
@@ -607,7 +639,9 @@ fun AyuReportsTab(
                     AyuReportCard(
                         report = report,
                         downloadStatus = downloadStatus,
-                        onDownload = { onDownload(report) }
+                        viewedAt = currentTime,
+                        onDownload = { onDownload(report)
+                        }
                     )
                 }
             }
@@ -619,7 +653,8 @@ fun AyuReportsTab(
 fun AyuReportCard(
     report: AyuReport,
     downloadStatus: DownloadStatus,
-    onDownload: () -> Unit
+    onDownload: () -> Unit,
+    viewedAt: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -700,7 +735,12 @@ fun AyuReportCard(
                 fontSize = 12.sp
             )
 
-            // Show additional info from response data
+            Text(
+                text = "Generated at: $viewedAt",
+                color = Color.Gray,
+                fontSize = 12.sp
+            )
+
             report.responseData?.let { response ->
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -713,106 +753,7 @@ fun AyuReportCard(
     }
 }
 
-/*@Composable
-fun UploadDialog(
-    fileName: String,
-    uploadStatus: UploadStatus,
-    onUpload: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = {
-            if (uploadStatus !is UploadStatus.Loading) onDismiss()
-        },
-        containerColor = appBarColor,
-        title = {
-            Text(
-                text = "Upload Medical Report",
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.Gray.copy(alpha = 0.2f))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Selected File:",
-                            color = Color.Gray,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Light
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = fileName,
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
 
-                when (uploadStatus) {
-                    is UploadStatus.Success -> {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = uploadStatus.message,
-                            color = Color.Green,
-                            fontSize = 14.sp
-                        )
-                    }
-                    is UploadStatus.Error -> {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = uploadStatus.message,
-                            color = Color.Red,
-                            fontSize = 14.sp
-                        )
-                    }
-                    else -> {}
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onUpload,
-                colors = ButtonDefaults.buttonColors(containerColor = orange),
-                enabled = uploadStatus !is UploadStatus.Loading && uploadStatus !is UploadStatus.Success
-            ) {
-                when (uploadStatus) {
-                    is UploadStatus.Loading -> {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Uploading...")
-                    }
-                    is UploadStatus.Success -> {
-                        Text("Done")
-                    }
-                    else -> {
-                        Text("Upload")
-                    }
-                }
-            }
-        },
-        dismissButton = {
-            if (uploadStatus !is UploadStatus.Loading) {
-                TextButton(
-                    onClick = onDismiss
-                ) {
-                    Text("Cancel", color = Color.Gray)
-                }
-            }
-        }
-    )
-}*/
 
 private fun getFileType(fileName: String): String {
     return when {
@@ -827,222 +768,3 @@ private fun getFileType(fileName: String): String {
 }
 
 
-
-
-//package com.ayudevices.neosynkparent.ui.screen.dashboard
-//
-//import android.net.Uri
-//import androidx.activity.compose.rememberLauncherForActivityResult
-//import androidx.activity.result.contract.ActivityResultContracts
-//import androidx.compose.foundation.background
-//import androidx.compose.foundation.border
-//import androidx.compose.foundation.clickable
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.foundation.shape.RoundedCornerShape
-//import androidx.compose.material.icons.Icons
-//import androidx.compose.material.icons.filled.AttachFile
-//import androidx.compose.material.icons.filled.CloudUpload
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.*
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.graphics.Color
-//import androidx.compose.ui.platform.LocalContext
-//import androidx.compose.ui.text.font.FontWeight
-//import androidx.compose.ui.unit.dp
-//import androidx.compose.ui.unit.sp
-//import androidx.navigation.NavController
-//import com.ayudevices.neosynkparent.data.repository.FileUploadRepository
-//import com.ayudevices.neosynkparent.ui.theme.appBarColor
-//import com.ayudevices.neosynkparent.ui.theme.orange
-//import kotlinx.coroutines.launch
-//
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun UploadScreen(navController: NavController) {
-//    var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
-//    var selectedFileName by remember { mutableStateOf<String?>(null) }
-//    var isUploading by remember { mutableStateOf(false) }
-//    var uploadMessage by remember { mutableStateOf<String?>(null) }
-//
-//    val context = LocalContext.current
-//    val scope = rememberCoroutineScope()
-//    val fileUploadRepository = remember { FileUploadRepository() }
-//
-//    // File picker launcher
-//    val filePickerLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.GetContent()
-//    ) { uri: Uri? ->
-//        uri?.let {
-//            selectedFileUri = it
-//            // Get the file name from the URI
-//            val cursor = context.contentResolver.query(it, null, null, null, null)
-//            cursor?.use { c ->
-//                if (c.moveToFirst()) {
-//                    val displayNameIndex = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-//                    if (displayNameIndex != -1) {
-//                        selectedFileName = c.getString(displayNameIndex)
-//                    }
-//                }
-//            }
-//            // Fallback to last path segment if display name is not available
-//            if (selectedFileName == null) {
-//                selectedFileName = it.lastPathSegment ?: "Unknown file"
-//            }
-//        }
-//    }
-//
-//    Surface(
-//        modifier = Modifier.fillMaxSize(),
-//        color = Color.Black
-//    ) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(16.dp)
-//        ) {
-//            TopAppBar(
-//                title = { Text("Upload File", color = Color.White) },
-//                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-//            )
-//
-//            Spacer(modifier = Modifier.height(32.dp))
-//
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//                    .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-//                    .background(appBarColor.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-//                    .clickable {
-//                        // Launch file picker with various file types
-//                        filePickerLauncher.launch("*/*")
-//                    },
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//                    Icon(
-//                        imageVector = Icons.Default.CloudUpload,
-//                        contentDescription = "Upload Icon",
-//                        tint = Color.White,
-//                        modifier = Modifier.size(48.dp)
-//                    )
-//                    Spacer(modifier = Modifier.height(8.dp))
-//                    Text(
-//                        text = if (selectedFileName != null) "Tap to select another file" else "Tap to select a file",
-//                        color = Color.White
-//                    )
-//                }
-//            }
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            selectedFileName?.let {
-//                Card(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    colors = CardDefaults.cardColors(containerColor = Color.Gray.copy(alpha = 0.2f))
-//                ) {
-//                    Column(
-//                        modifier = Modifier.padding(16.dp)
-//                    ) {
-//                        Text(
-//                            text = "Selected File:",
-//                            color = Color.Gray,
-//                            fontSize = 12.sp,
-//                            fontWeight = FontWeight.Light
-//                        )
-//                        Spacer(modifier = Modifier.height(4.dp))
-//                        Text(
-//                            text = it,
-//                            color = Color.White,
-//                            fontSize = 14.sp,
-//                            fontWeight = FontWeight.Medium
-//                        )
-//                    }
-//                }
-//            }
-//
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            Button(
-//                onClick = {
-//                    selectedFileUri?.let { uri ->
-//                        isUploading = true
-//                        uploadMessage = null
-//
-//                        scope.launch {
-//                            fileUploadRepository.uploadFile(
-//                                uri = uri,
-//                                context = context,
-//                                uploadUrl = "https://your-server.com/upload",
-//                                onSuccess = { response ->
-//                                    isUploading = false
-//                                    uploadMessage = "File uploaded successfully!"
-//                                },
-//                                onError = { error ->
-//                                    isUploading = false
-//                                    uploadMessage = "Upload failed: $error"
-//                                }
-//                            )
-//                        }
-//                    }
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(50.dp),
-//                colors = ButtonDefaults.buttonColors(containerColor = orange),
-//                shape = RoundedCornerShape(12.dp),
-//                enabled = selectedFileUri != null && !isUploading
-//            ) {
-//                if (isUploading) {
-//                    CircularProgressIndicator(
-//                        color = Color.White,
-//                        modifier = Modifier.size(20.dp)
-//                    )
-//                } else {
-//                    Icon(
-//                        imageVector = Icons.Default.AttachFile,
-//                        contentDescription = "Attach File",
-//                        tint = Color.White
-//                    )
-//                }
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text(
-//                    text = if (isUploading) "Uploading..." else "Upload",
-//                    color = Color.White
-//                )
-//            }
-//
-//            if (selectedFileUri == null) {
-//                Spacer(modifier = Modifier.height(8.dp))
-//                Text(
-//                    text = "Please select a file to upload",
-//                    color = Color.Gray,
-//                    fontSize = 12.sp,
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//            }
-//
-//            // Upload status message
-//            uploadMessage?.let { message ->
-//                Spacer(modifier = Modifier.height(16.dp))
-//                Card(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    colors = CardDefaults.cardColors(
-//                        containerColor = if (message.contains("success"))
-//                            Color.Green.copy(alpha = 0.2f)
-//                        else
-//                            Color.Red.copy(alpha = 0.2f)
-//                    )
-//                ) {
-//                    Text(
-//                        text = message,
-//                        color = if (message.contains("success")) Color.Green else Color.Red,
-//                        fontSize = 14.sp,
-//                        modifier = Modifier.padding(16.dp)
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}

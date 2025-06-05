@@ -13,5 +13,5 @@ data class ChatEntity(
     val sender: String,
     val timestamp: Long = System.currentTimeMillis(),
     val options: List<String> = emptyList(), // For Yes/No/Skip buttons
-    val isAnswered: Boolean = false // Flag to track if options have been responded to
+    val isAnswered: Boolean = false
 )
