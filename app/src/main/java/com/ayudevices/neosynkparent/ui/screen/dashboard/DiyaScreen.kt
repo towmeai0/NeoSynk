@@ -28,7 +28,6 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
@@ -36,9 +35,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -48,23 +45,26 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
+import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.viewmodel.ChatViewModel
-import com.google.mlkit.common.model.DownloadConditions
-
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
-import kotlin.math.PI
-import kotlin.math.sin
-import kotlin.random.Random
-
-import com.google.mlkit.nl.translate.*
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import com.ayudevices.neosynkparent.utils.MLKitTranslationManager
 import com.ayudevices.neosynkparent.utils.Language
+import com.ayudevices.neosynkparent.utils.VideoPlayer
+import kotlin.String
+
+data class VideoMessage(
+    val text: String,
+    val videoUrl: String? = null
+)
+
+val testMessage = ChatEntity(
+    message = "Here’s how it works > https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4 ",
+    sender = "bot"
+)
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -361,6 +361,10 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        val displayedMessages = remember(messages) {
+            listOf(testMessage) + messages.reversed()
+        }
+
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -369,25 +373,38 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             reverseLayout = true,
             state = listState
         ) {
-            items(messages.reversed()) { message ->
+            items(displayedMessages) { message ->
+
+                val msg: VideoMessage? = parseMessage(message.message)
+                val videoUrl = msg?.videoUrl
+                val text = msg?.text
+                var newMsg: ChatEntity? = null
+                if(text != null){
+                    newMsg = message.copy(message = text)
+                }
+
+                val baseMessage = newMsg ?: message
+
                 // Create translated message for display
                 val translatedMessage by produceState(
-                    initialValue = message,
-                    key1 = message,
+                    initialValue = baseMessage,
+                    key1 = baseMessage,
                     key2 = selectedLanguage
                 ) {
                     if (message.sender != "user" && selectedLanguage.code != "en") {
                         // Translate bot messages to selected language
-                        val translated = translateFromEnglish(message.message, selectedLanguage)
-                        value = message.copy(message = translated)
+                        val translated = translateFromEnglish(baseMessage.message, selectedLanguage)
+                        value = baseMessage.copy(message = translated)
                     } else {
-                        value = message
+                        value = baseMessage
                     }
                 }
 
                 MessageItem(
+                    viewModel = viewModel,
                     message = translatedMessage,
-                    originalMessage = message, // Keep original for TTS fallback
+                    videoUrl = videoUrl,
+                    originalMessage = baseMessage, // Keep original for TTS fallback
                     tts = ttsInstance.value,
                     isTtsInitialized = isTtsInitialized,
                     selectedLanguage = selectedLanguage,
@@ -406,7 +423,11 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                     onOptionSelected = { option ->
                         if (option == "Select Date") {
                             showDatePicker = true
-                        } else {
+                        }
+                        else if(option == "View More"){
+                            navController.navigate(Screen.MilestoneDetail.route)
+                        }
+                        else {
                             viewModel.onOptionSelected(option)
                         }
                     }
@@ -511,24 +532,26 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
     }
 }
 
-// Helper function to load saved language
-private fun getSavedLanguage(
-    sharedPreferences: SharedPreferences,
-    availableLanguages: List<Language>
-): Language {
-    val savedLanguageCode = sharedPreferences.getString("selected_language_code", "en")
-    val savedLanguageName = sharedPreferences.getString("selected_language_name", "English")
-
-    // Try to find the saved language in available languages
-    return availableLanguages.find { it.code == savedLanguageCode }
-        ?: availableLanguages.find { it.name == savedLanguageName }
-        ?: availableLanguages.firstOrNull() // Fallback to first available language
-        ?: Language("English", "en", Locale.ENGLISH) // Ultimate fallback
+fun parseMessage(message: String): VideoMessage? {
+    return if (message.contains(">")) {
+        val parts = message.split(">", limit = 2).map { it.trim() }
+        Log.d("VideoDebug", "Parsed videoUrl: ${parts.getOrNull(1)}")
+        VideoMessage(
+            text = parts[0],
+            videoUrl = parts.getOrNull(1)
+        )
+    } else {
+        Log.d("VideoDebug", "No video URL found in message")
+        null
+    }
 }
+
 
 @Composable
 fun MessageItem(
+    viewModel: ChatViewModel,
     message: ChatEntity,
+    videoUrl: String?,
     originalMessage: ChatEntity,
     tts: TextToSpeech?,
     isTtsInitialized: Boolean,
@@ -538,6 +561,7 @@ fun MessageItem(
     onPlaybackComplete: () -> Unit,
     onOptionSelected: (String) -> Unit
 ) {
+    Log.d("VideoDebug", "MessageItem: videoUrl = $videoUrl")
     // Track TTS completion - Fixed
     LaunchedEffect(isPlaying) {
         if (isPlaying && tts != null && isTtsInitialized) {
@@ -660,6 +684,21 @@ fun MessageItem(
             )
         }
 
+        val context = LocalContext.current
+
+        //Video Part
+        videoUrl?.let { url ->
+            Spacer(modifier = Modifier.height(8.dp))
+            val player = viewModel.getPlayer(context, url)
+            VideoPlayer(
+                player = player,
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(300.dp)
+            )
+        }
+
+
         // Show option buttons only if available, message is from bot AND not answered
         if (originalMessage.options.isNotEmpty() && originalMessage.sender != "user" && !originalMessage.isAnswered) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -682,6 +721,22 @@ fun MessageItem(
             }
         }
     }
+}
+
+
+// Helper function to load saved language
+private fun getSavedLanguage(
+    sharedPreferences: SharedPreferences,
+    availableLanguages: List<Language>
+): Language {
+    val savedLanguageCode = sharedPreferences.getString("selected_language_code", "en")
+    val savedLanguageName = sharedPreferences.getString("selected_language_name", "English")
+
+    // Try to find the saved language in available languages
+    return availableLanguages.find { it.code == savedLanguageCode }
+        ?: availableLanguages.find { it.name == savedLanguageName }
+        ?: availableLanguages.firstOrNull() // Fallback to first available language
+        ?: Language("English", "en", Locale.ENGLISH) // Ultimate fallback
 }
 
 @Composable
