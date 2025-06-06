@@ -21,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ayudevices.neosynkparent.viewmodel.ProfileViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -39,6 +40,8 @@ fun ProfileScreen(
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
+    var email = FirebaseAuth.getInstance().currentUser?.email
+    Log.d("FIrebase Email","EMAIL ID $email")
 
     // Set Google user name when available
     LaunchedEffect(googleUserName) {
@@ -153,7 +156,8 @@ fun ProfileScreen(
                         errorMessage = ""
                         isLoading = true
                         // Update ViewModel with current values before saving
-                        viewModel.updateProfile(name, location, gender)
+                        Log.d("EMailk ","Emailk $email")
+                        viewModel.updateProfile(email, name, location, gender)
                         viewModel.saveUserProfile()
                         shouldNavigate = true
                     }
