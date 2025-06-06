@@ -24,6 +24,7 @@ import com.ayudevices.neosynkparent.viewmodel.DocsViewModel
 import com.example.heightmodel.utils.generateBabyReportPDF
 import java.io.File
 
+/*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,4 +179,4 @@ fun FileSelectorBox(onClick: () -> Unit) {
             Text("Tap to select a file", color = Color.White)
         }
     }
-}
+}*/

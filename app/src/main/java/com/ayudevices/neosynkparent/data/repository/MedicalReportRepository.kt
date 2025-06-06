@@ -14,14 +14,12 @@ import javax.inject.Singleton
 class MedicalReportRepository @Inject constructor(
     private val apiService: ApiService
 ) {
-
     suspend fun uploadMedicalReport(
         parentId: String,
         file: MultipartBody.Part
     ): Result<MedicalReportUploadResponse> {
         return try {
             Log.d("MEDICAL_UPLOAD", "Uploading file for parent_id: $parentId")
-
             val parentIdPart = RequestBody.create("text/plain".toMediaTypeOrNull(), parentId)
             val response = apiService.uploadMedicalReport(parentIdPart, file)
 
@@ -45,7 +43,6 @@ class MedicalReportRepository @Inject constructor(
             Log.d("MEDICAL_REPORTS", "Fetching reports for parent_id: $parentId")
             val response = apiService.getMedicalReports(parentId)
             Log.d("MEDICAL_REPORTS", "Reports response: $response")
-
             if (response.isSuccessful) {
                 response.body()?.let { reports ->
                     Result.success(reports)

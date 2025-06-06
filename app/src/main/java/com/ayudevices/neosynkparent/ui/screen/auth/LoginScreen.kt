@@ -1,5 +1,6 @@
 package com.ayudevices.neosynkparent.ui.screen.auth
 
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,10 +20,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.ayudevices.neosynkparent.di.NetworkModule.TokenSenderEntryPoint
 import com.ayudevices.neosynkparent.ui.screen.Screen
 import com.ayudevices.neosynkparent.ui.theme.OrangeAccent
 import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -109,10 +113,26 @@ fun LoginScreen(
 }
 
 fun onLoginSuccess(navController: NavHostController) {
+    FirebaseMessaging.getInstance().token
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val fcmToken = task.result
+                Log.d("FCM", "Token on login: $fcmToken")
+
+                val context = navController.context.applicationContext
+                val entryPoint = EntryPointAccessors.fromApplication(
+                    context,
+                    TokenSenderEntryPoint::class.java
+                )
+                entryPoint.tokenSender().sendFcmTokenToServer(fcmToken)
+            } else {
+                Log.e("FCM", "Failed to get token: ", task.exception)
+            }
+        }
+
     navController.navigate(Screen.Home.route) {
         popUpTo(Screen.Home.route) { inclusive = true }
     }
-
 }
 
 @Preview(showBackground = true)

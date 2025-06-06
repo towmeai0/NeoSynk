@@ -1,6 +1,5 @@
 package com.ayudevices.neosynkparent.data.database.chatdatabase
 
-
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

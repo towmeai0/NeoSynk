@@ -12,38 +12,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.ayudevices.neosynkparent.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
 
 @Composable
-fun ProfileDisplay(navController: NavController) {
-    var name by remember { mutableStateOf("") }
-    var loc by remember { mutableStateOf("") }
-    var gender by remember { mutableStateOf("") }
-
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
-    val databaseRef = FirebaseDatabase.getInstance().getReference("NeoSynk").child("user")
-
-    LaunchedEffect(userId) {
-        userId?.let {
-            databaseRef.child(it).addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    name = snapshot.child("name").getValue(String::class.java) ?: ""
-                    loc = snapshot.child("location").getValue(String::class.java) ?: ""
-                    gender = snapshot.child("gender").getValue(String::class.java) ?: ""
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-
-                }
-            })
-        }
-    }
+fun ProfileDisplay(
+    navController: NavController,
+    viewModel: ProfileViewModel = hiltViewModel()
+) {
+    val name by viewModel.name
+    val loc by viewModel.location
+    val gender by viewModel.gender
+    val loading by viewModel.loading
 
     Box(
         modifier = Modifier
@@ -85,11 +69,15 @@ fun ProfileDisplay(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                ProfileTextItem(label = "Name", value = name)
-                Spacer(modifier = Modifier.height(8.dp))
-                ProfileTextItem(label = "Location", value = loc)
-                Spacer(modifier = Modifier.height(8.dp))
-                ProfileTextItem(label = "Gender", value = gender)
+                if (loading) {
+                    CircularProgressIndicator(color = Color.White)
+                } else {
+                    ProfileTextItem(label = "Name", value = name)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ProfileTextItem(label = "Location", value = loc)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ProfileTextItem(label = "Gender", value = gender)
+                }
             }
 
             Button(
@@ -117,10 +105,4 @@ fun ProfileTextItem(label: String, value: String) {
         Text(text = label, color = Color.Gray, fontSize = 14.sp)
         Text(text = if (value.isNotEmpty()) value else "N/A", color = Color.White, fontSize = 16.sp)
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun Scre(){
-    ProfileDisplay(navController = rememberNavController())
 }
