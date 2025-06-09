@@ -60,12 +60,6 @@ data class VideoMessage(
     val videoUrl: String? = null
 )
 
-val testMessage = ChatEntity(
-    message = "Here’s how it works > https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4 ",
-    sender = "bot"
-)
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltViewModel()) {
@@ -361,10 +355,6 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        val displayedMessages = remember(messages) {
-            listOf(testMessage) + messages.reversed()
-        }
-
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -373,7 +363,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             reverseLayout = true,
             state = listState
         ) {
-            items(displayedMessages) { message ->
+            items(messages.reversed()) { message ->
 
                 val msg: VideoMessage? = parseMessage(message.message)
                 val videoUrl = msg?.videoUrl
