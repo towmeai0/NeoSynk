@@ -1,6 +1,7 @@
 package com.ayudevices.neosynkparent.ui.screen.dashboard
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -90,7 +91,10 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
             Language("Tamil", "ta", Locale("ta", "IN")),
             Language("Telugu", "te", Locale("te", "IN")),
             Language("Malayalam", "ml", Locale("ml", "IN")),
-            Language("Urdu", "ur", Locale("ur", "PK"))
+            Language("Urdu", "ur", Locale("ur", "PK")),
+            Language("Bengali", "bn", Locale("bn", "IN")),
+            Language("Gujarati", "gu", Locale("gu", "IN")),
+            Language("Marathi", "mr", Locale("mr", "IN")),
         ).filter { translationManager.isLanguageSupported(it.code) }
     }
 
@@ -258,6 +262,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
     }
 
     // Function to save language to SharedPreferences
+    @SuppressLint("UseKtx")
     fun saveLanguagePreference(language: Language) {
         with(sharedPreferences.edit()) {
             putString("selected_language_code", language.code)
@@ -333,6 +338,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                         onDismissRequest = { showLanguageDropdown = false },
                         modifier = Modifier.background(Color.DarkGray)
                     ) {
+                        Log.d("jhsfvb", "Available Languages $availableLanguages")
                         availableLanguages.forEach { language ->
                             DropdownMenuItem(
                                 text = {

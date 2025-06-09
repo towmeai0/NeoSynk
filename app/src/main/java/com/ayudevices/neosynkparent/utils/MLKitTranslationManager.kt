@@ -97,15 +97,19 @@ class MLKitTranslationManager {
 
     private fun mapLanguageCodeToMLKit(code: String): String? {
         return when (code) {
-            "kn" -> TranslateLanguage.KANNADA
+            "en" -> TranslateLanguage.ENGLISH
             "hi" -> TranslateLanguage.HINDI
+            "kn" -> TranslateLanguage.KANNADA
             "ta" -> TranslateLanguage.TAMIL
             "te" -> TranslateLanguage.TELUGU
             "ur" -> TranslateLanguage.URDU
-            "en" -> TranslateLanguage.ENGLISH
-            else -> null // Language not supported
+            "bn" -> TranslateLanguage.BENGALI
+            "gu" -> TranslateLanguage.GUJARATI
+            "mr" -> TranslateLanguage.MARATHI
+            else -> null // Not supported
         }
     }
+
 
     fun closeTranslators() {
         translators.values.forEach { it.close() }

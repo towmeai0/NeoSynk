@@ -329,14 +329,9 @@ fun MedicalReportsTab(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Error loading reports",
-                        color = Color.Red,
+                        text = "No medical reports found",
+                        color = Color.White,
                         fontSize = 16.sp
-                    )
-                    Text(
-                        text = error,
-                        color = Color.Gray,
-                        fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
@@ -494,8 +489,6 @@ fun UploadDialog(
 }
 
 
-
-
 @Composable
 fun MedicalReportCard(report: MedicalReportResponse) {
     Card(
@@ -586,14 +579,9 @@ fun AyuReportsTab(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Error loading reports",
-                        color = Color.Red,
+                        text = "No Ayu reports found",
+                        color = Color.White,
                         fontSize = 16.sp
-                    )
-                    Text(
-                        text = error,
-                        color = Color.Gray,
-                        fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
