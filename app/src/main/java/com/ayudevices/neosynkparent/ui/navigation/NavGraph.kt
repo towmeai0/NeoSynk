@@ -19,7 +19,6 @@ import com.ayudevices.neosynkparent.ui.screen.auth.SplashScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.VitalTabScreen
 import com.ayudevices.neosynkparent.ui.screen.dashboard.DiyaScreen
 import com.ayudevices.neosynkparent.ui.screen.dashboard.HomeScreen
-import com.ayudevices.neosynkparent.ui.screen.dashboard.LiveFeedTab
 import com.ayudevices.neosynkparent.ui.screen.dashboard.MilestoneTab
 import com.ayudevices.neosynkparent.ui.screen.dashboard.UploadScreen
 import com.ayudevices.neosynkparent.ui.screen.tabs.LiveTab
