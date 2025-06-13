@@ -21,7 +21,6 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ayudevices.neosynkparent.viewmodel.DocsViewModel
-
 import java.io.File
 
 /*

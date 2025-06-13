@@ -13,6 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor() : ViewModel() {
 
+    var email = mutableStateOf("")
     var name = mutableStateOf("")
     var location = mutableStateOf("")
     var gender = mutableStateOf("")
@@ -52,7 +53,8 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
         })
     }
 
-    fun updateProfile(name: String, location: String, gender: String) {
+    fun updateProfile(email: String?, name: String, location: String, gender: String) {
+        this.email.value = email.toString()
         this.name.value = name
         this.location.value = location
         this.gender.value = gender
@@ -68,6 +70,7 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
             }
 
             val profileData = mapOf(
+                "email" to email.value,
                 "name" to name.value,
                 "location" to location.value,
                 "gender" to gender.value

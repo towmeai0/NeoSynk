@@ -268,6 +268,8 @@ class ChatRepository @Inject constructor(
                 listOf("Select Date")
             "dob_saved" ->
                 listOf("OK")
+            "milestones_completed" ->
+                listOf("View More")
             "height_vital_request", "weight_vital_request",
             "heart_rate_vital_request", "spo2_vital_request", "report_generated" ->
                 emptyList()

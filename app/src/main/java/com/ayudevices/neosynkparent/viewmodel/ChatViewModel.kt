@@ -1,8 +1,11 @@
 package com.ayudevices.neosynkparent.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import com.ayudevices.neosynkparent.data.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -16,6 +19,24 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val repository: ChatRepository
 ) : ViewModel() {
+
+    private val players = mutableMapOf<String, ExoPlayer>()
+
+    fun getPlayer(context: Context, url: String): ExoPlayer {
+        return players.getOrPut(url) {
+            ExoPlayer.Builder(context).build().apply {
+                setMediaItem(MediaItem.fromUri(url))
+                prepare()
+                playWhenReady = true
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        players.values.forEach { it.release() }
+        players.clear()
+    }
 
     val messages = repository.getAllMessages()
         .stateIn(
