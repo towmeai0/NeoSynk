@@ -124,4 +124,6 @@ dependencies {
     // MLKit for offline translation (recommended for mobile)
     implementation("com.google.mlkit:translate:17.0.3")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    implementation ("org.videolan.android:libvlc-all:3.5.1")
 }

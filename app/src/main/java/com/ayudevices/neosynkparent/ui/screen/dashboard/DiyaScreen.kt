@@ -421,7 +421,7 @@ fun DiyaScreen(navController: NavController, viewModel: ChatViewModel = hiltView
                             showDatePicker = true
                         }
                         else if(option == "View More"){
-                            navController.navigate(Screen.MilestoneDetail.route)
+                            navController.navigate(Screen.MilestonesTab.route)
                         }
                         else {
                             viewModel.onOptionSelected(option)

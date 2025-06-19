@@ -156,8 +156,10 @@ fun VitalsTab(navController: NavController) {
 
 @Composable
 fun MilestoneTab(navController: NavController) {
-    MilestonesTab(
+    FirebaseAuth.getInstance().currentUser?.uid?.let {
+        MilestonesTab(
         navController = navController,
-        userId = "user123" // or whatever userId you have
+        userId = it
     )
+    }
 }
