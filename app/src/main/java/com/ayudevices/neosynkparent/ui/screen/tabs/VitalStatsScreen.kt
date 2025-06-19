@@ -101,18 +101,12 @@ fun VitalTabScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Error loading vital data",
+                    text = "No vitals data found",
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = error ?: "Unknown error",
-                    color = Color.Gray,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center
-                )
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { FirebaseAuth.getInstance().currentUser?.uid?.let {
