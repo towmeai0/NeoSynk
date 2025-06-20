@@ -2,17 +2,13 @@ package com.ayudevices.neosynkparent.data.network
 
 import android.content.Context
 import android.util.Log
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatDao
 import com.ayudevices.neosynkparent.data.database.chatdatabase.ChatEntity
-import com.ayudevices.neosynkparent.data.model.ChatRequest
 import com.ayudevices.neosynkparent.data.model.DeviceBodyRequest
 import com.ayudevices.neosynkparent.data.model.FcmTokenRequest
 import com.ayudevices.neosynkparent.data.model.VitalsBodyRequest
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
 import com.ayudevices.neosynkparent.data.repository.ChatRepository
-import com.ayudevices.neosynkparent.viewmodel.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.ayudevices.neosynkparent.data.repository.AuthRepository
 import com.ayudevices.neosynkparent.di.NetworkModule.TokenSenderEntryPoint
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.EntryPointAccessors

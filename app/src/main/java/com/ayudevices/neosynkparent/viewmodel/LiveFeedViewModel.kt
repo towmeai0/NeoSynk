@@ -29,9 +29,6 @@ class LiveFeedViewModel @Inject constructor(
     private val _isViewing = MutableStateFlow(false)
     val isViewing: StateFlow<Boolean> = _isViewing
 
-    private var webRtcManager: WebRTCManager? = null
-    private var surfaceViewRenderer: SurfaceViewRenderer? = null
-
 
     private var statusListener: ValueEventListener? = null
 
@@ -94,21 +91,6 @@ class LiveFeedViewModel @Inject constructor(
 
         signalingRoot.child("status").setValue(true)
 
-        webRtcManager?.cleanup()
-        webRtcManager = WebRTCManager(
-            context = context,
-            signalingRef = signalingRoot
-        ).apply {
-            // Add this callback to update ViewModel state
-            onFirstFrameReceived = {
-                _hasReceivedFrames.value = true
-            }
-
-            // Restore remote renderer if needed
-            surfaceViewRenderer?.let { setRemoteRenderer(it) }
-
-            startStreaming()
-        }
     }
 
 
@@ -119,33 +101,14 @@ class LiveFeedViewModel @Inject constructor(
         _connectionStatus.value = "Disconnected"
         _isViewing.value = false
 
-        // Call the stopStreaming method to remove listeners
-        webRtcManager?.stopStreaming()
-        _hasReceivedFrames.value = false // ✅ Reset frame flag
-
-
-        //database.getReference("NeoSynk").child("status").setValue(false)
         val signalingRoot = database.getReference("NeoSynk").child("signaling").child(userId)
         signalingRoot.child("status").setValue(false)
 
         signalingRoot.child("child").removeValue()
         signalingRoot.child("parent").removeValue()
 
-        // Clean up completely - we'll recreate when viewing starts again
-        webRtcManager?.cleanup()
-        webRtcManager = null
-
-        // Also cleanup the renderer reference
-        surfaceViewRenderer = null
     }
 
-
-
-    fun setRemoteRenderer(renderer: SurfaceViewRenderer) {
-        Log.d("LIVE Feed", "Setting remote renderer")
-        surfaceViewRenderer = renderer
-        webRtcManager?.setRemoteRenderer(renderer)
-    }
 
     override fun onCleared() {
         super.onCleared()
@@ -156,8 +119,7 @@ class LiveFeedViewModel @Inject constructor(
             //database.getReference("NeoSynk").child("status").removeEventListener(it)
         }
         stopViewing()
-        webRtcManager?.cleanup()
-        webRtcManager = null
+
     }
 
     fun onFrameReceived() {

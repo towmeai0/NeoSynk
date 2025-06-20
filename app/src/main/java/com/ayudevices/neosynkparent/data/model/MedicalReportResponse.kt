@@ -8,11 +8,10 @@ data class MedicalReportResponse(
     val s3_url: String,
     val upload_time: String
 ) {
-    // Helper properties for UI compatibility
     val name: String get() = filename
     val uploadDate: String get() = upload_time.split("T")[0]
     val fileType: String get() = getFileTypeFromName(filename)
-    val size: String get() = "" // API doesn't provide size, could be enhanced
+    val size: String get() = ""
 
     private fun getFileTypeFromName(fileName: String): String {
         return when {

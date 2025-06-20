@@ -18,7 +18,6 @@ class GoogleAuthUiClient(private val context: Context) {
             BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                 .setSupported(true)
                 .setServerClientId("107095965626-3ihmkavhbhond19rrtu7ktip132t04lb.apps.googleusercontent.com")
-                // Replace with your actual client ID
                 .setFilterByAuthorizedAccounts(false)
                 .build()
         )

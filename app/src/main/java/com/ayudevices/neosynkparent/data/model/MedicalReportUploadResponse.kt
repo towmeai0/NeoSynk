@@ -6,7 +6,6 @@ data class MedicalReportUploadResponse(
 )
 
 
-// Upload status sealed class
 sealed class UploadStatus {
     object Idle : UploadStatus()
     object Loading : UploadStatus()

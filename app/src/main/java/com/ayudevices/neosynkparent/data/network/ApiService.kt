@@ -5,7 +5,6 @@ import com.ayudevices.neosynkparent.data.model.MedicalReportResponse
 import com.ayudevices.neosynkparent.data.model.MedicalReportUploadResponse
 import com.ayudevices.neosynkparent.data.model.MileStoneDataResponse
 import com.ayudevices.neosynkparent.data.model.ParentInfoRequest
-import com.ayudevices.neosynkparent.data.model.VitalData
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
